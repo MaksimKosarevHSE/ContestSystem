@@ -49,8 +49,8 @@ class VerdictInfo{
 }
 
 public class TestSystem {
-    static final String PATH_TO_TESTS = "judje/tests";
-    static final String PATH_TO_SESSION_STORE = "judje/sessions"; // UUID/ скомпилированный и вывод
+    static final String PATH_TO_TESTS = "judge/tests";
+    static final String PATH_TO_SESSION_STORE = "judge/sessions"; // UUID/ скомпилированный и вывод
     static final String OUTPUT_FILE_NAME = "output.txt";
     static final String SOURCE_FILE_NAME = "main";
     static BlockingQueue<SubmissionMetaDTO> submissions = new LinkedBlockingQueue<>();
@@ -175,6 +175,7 @@ public class TestSystem {
             verdictInfo.usedMemory = 123;
             verdictInfo.executionTime = duration;
             if (!successEnd) {
+                process.destroyForcibly();
                 verdictInfo.numOfFailureTest = i;
                 throw new TimeLimitException();
             }
@@ -207,6 +208,7 @@ public class TestSystem {
         boolean successEnd = process.waitFor(10, TimeUnit.SECONDS);
 //        System.out.println(new String(Files.readAllBytes(outputPath)));
         if (!successEnd) {
+            process.destroyForcibly();
             throw new CompilationTimeException();
         }
         int exitCode = process.exitValue();
