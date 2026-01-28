@@ -6,14 +6,18 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+
+@AllArgsConstructor
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class SolutionSubmittedEvent {
     private int problemId;
     private int userId;
     private int submissionId;
     private String source;
     private ProgrammingLanguage language;
+    private int timeLimit;
+    private int memoryLimit;
+    private int compilationTimeLimit;
 }
