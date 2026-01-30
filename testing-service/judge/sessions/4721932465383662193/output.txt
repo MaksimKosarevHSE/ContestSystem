@@ -1,0 +1,19 @@
+judge\sessions\4721932465383662193\main.cpp:2:7: error: expected nested-name-specifier before 'namspace'
+    2 | using namspace std;
+      |       ^~~~~~~~
+judge\sessions\4721932465383662193\main.cpp: In function 'int main()':
+judge\sessions\4721932465383662193\main.cpp:4:8: error: 'cin' was not declared in this scope; did you mean 'std::cin'?
+    4 | int t; cin >> t;
+      |        ^~~
+      |        std::cin
+In file included from judge\sessions\4721932465383662193\main.cpp:1:
+C:/Program Files/JetBrains/CLion 2025.3.1.1/bin/mingw/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/iostream:62:18: note: 'std::cin' declared here
+   62 |   extern istream cin;           ///< Linked to standard input
+      |                  ^~~
+judge\sessions\4721932465383662193\main.cpp:7:1: error: 'cout' was not declared in this scope; did you mean 'std::cout'?
+    7 | cout << x + y << "\n";
+      | ^~~~
+      | std::cout
+C:/Program Files/JetBrains/CLion 2025.3.1.1/bin/mingw/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/iostream:63:18: note: 'std::cout' declared here
+   63 |   extern ostream cout;          ///< Linked to standard output
+      |                  ^~~~

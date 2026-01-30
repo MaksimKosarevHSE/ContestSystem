@@ -4,7 +4,6 @@ import com.maksim.testingService.DTO.VerdictInfo;
 import com.maksim.testingService.enums.Status;
 import com.maksim.testingService.event.SolutionSubmittedEvent;
 import com.maksim.testingService.exceptions.*;
-import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,7 +14,6 @@ import org.springframework.stereotype.Service;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalTime;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -33,7 +31,7 @@ public class TestSystem {
     private Random rand = new Random();
 
 
-    public void submissionProcessWorker(SolutionSubmittedEvent submissionMeta, int workerId) throws IOException {
+    public void processSubmission(SolutionSubmittedEvent submissionMeta, int workerId) throws IOException, InterruptedException {
             try {
                 submissionMeta.setTimeLimit(5);
                 log.debug("Worker {} started to test submission {}", workerId, submissionMeta.getSubmissionId());
@@ -57,6 +55,7 @@ public class TestSystem {
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
                 log.error("Worker {} thread is interrupted. {}", workerId, ex.getMessage());
+                throw ex;
             } catch (IOException ex) {
                 log.error("Server error while testing {}. {}", submissionMeta.getSubmissionId(), ex.getMessage());
                 throw ex;

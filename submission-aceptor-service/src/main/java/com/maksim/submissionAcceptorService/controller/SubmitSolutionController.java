@@ -1,6 +1,6 @@
 package com.maksim.submissionAcceptorService.controller;
 
-import com.maksim.submissionAcceptorService.service.dto.SubmitSolutionDto;
+import com.maksim.submissionAcceptorService.SubmitSolutionDto;
 import com.maksim.submissionAcceptorService.service.SubmitSolutionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

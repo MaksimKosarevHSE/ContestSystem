@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 
-@AllArgsConstructor
+//@AllArgsConstructor
 @Getter
 @Setter
 @NoArgsConstructor
@@ -20,4 +20,15 @@ public class SolutionSubmittedEvent {
     private int timeLimit;
     private int memoryLimit;
     private int compilationTimeLimit;
+
+    public SolutionSubmittedEvent(int problemId, int userId, int submissionId, String source, ProgrammingLanguage language, int timeLimit, int memoryLimit, int compilationTimeLimit) {
+        this.problemId = problemId;
+        this.userId = userId;
+        this.submissionId = submissionId;
+        this.source = source;
+        this.language = language;
+        this.timeLimit = timeLimit;
+        this.memoryLimit = memoryLimit;
+        this.compilationTimeLimit = compilationTimeLimit;
+    }
 }
