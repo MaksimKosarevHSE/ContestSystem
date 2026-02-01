@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.maksim</groupId>
-	<artifactId>SubmissionAceptorService</artifactId>
+	<artifactId>problemService</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>submission-acceptor-service</name>
+	<name>problemService</name>
 	<description>Demo project for Spring Boot</description>
 	<url/>
 	<licenses>
@@ -69,6 +69,13 @@
 			<version>4.0.1</version>
 			<scope>compile</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>42.7.8</version>
+			<scope>compile</scope>
+		</dependency>
+
 	</dependencies>
 
 	<build>
