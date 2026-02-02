@@ -17,7 +17,6 @@ public enum ProgrammingLanguage {
 
     public String[] getCompileCommand(Path source) {
         if (!this.needCompilation) throw new IllegalArgumentException("This language can't be compiled");
-
         if (this == Java){
             return new String[] {"javac", source.toString()};
         }
@@ -25,8 +24,6 @@ public enum ProgrammingLanguage {
             String fileName =  source.getFileName().toString();
             String target = source.getParent().resolve( fileName.substring(0, fileName.lastIndexOf('.')) + compiledSuffix).toString();
             var tmp = new String [] {"g++", source.toString(), "-o", target};
-//            var tmp = new String [] {"g++", source.toString()};
-//            System.out.println(Arrays.toString(tmp));
             return tmp;
         }
         return new String[]{};

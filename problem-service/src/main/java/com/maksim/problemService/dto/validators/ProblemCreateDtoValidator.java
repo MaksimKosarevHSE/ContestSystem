@@ -67,10 +67,11 @@ public class ProblemCreateDtoValidator {
         var inputFilesPrefix = new HashSet<Integer>();
 
         for (var inp : files) {
-            if (inp.getOriginalFilename() != null && inp.getOriginalFilename().endsWith(neededSuffix)) {
+            int idx;
+            if (inp.getOriginalFilename() != null && (idx = inp.getOriginalFilename().lastIndexOf(neededSuffix)) != -1) {
                 boolean badFileName = false;
                 try {
-                    int fileName = Integer.parseInt(inp.getOriginalFilename());
+                    int fileName = Integer.parseInt(inp.getOriginalFilename().substring(0, idx));
                     inputFilesPrefix.add(fileName);
                     if (!(1 <= fileName && fileName <= files.size())) badFileName = true;
                 } catch (NumberFormatException ex) {
@@ -78,7 +79,9 @@ public class ProblemCreateDtoValidator {
                 }
 
                 if (badFileName){
+//                    throw new NotValidDtoException(files.size())
                     throw new NotValidDtoException("Incorrect name of " + fileType + " file \"" + inp.getOriginalFilename() + "\". File must have prefix from 1 to total count of test cases");
+
                 }
 
             } else {

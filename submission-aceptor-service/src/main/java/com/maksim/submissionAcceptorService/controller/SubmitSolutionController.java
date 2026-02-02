@@ -50,6 +50,7 @@ public class SubmitSolutionController {
             submissionId = submitSolutionService.createSubmission(solution,userId);
         } catch (Exception ex){
             log.error("Can't accept submission. {}", ex.getMessage());
+            ex.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorMessage(LocalDateTime.now(), ex.getMessage()));
         }
         return ResponseEntity.ok(submissionId);

@@ -32,13 +32,8 @@ public class SolutionSubmittedEventHandler {
                        @Header(KafkaHeaders.RECEIVED_KEY) Integer key) throws IOException, InterruptedException {
 
         ProcessedEvent ev = processedEventRepository.findByMessageId(msgId);
-        System.out.println("KEY: " + key);
-        if (ev != null){
-            System.out.println("DROP");
-            return;
-        }
+        if (ev != null) return;
         testSystem.processSubmission(solutionEvent,1);
-
         processedEventRepository.save(new ProcessedEvent(msgId, solutionEvent.getUserId()));
     }
 

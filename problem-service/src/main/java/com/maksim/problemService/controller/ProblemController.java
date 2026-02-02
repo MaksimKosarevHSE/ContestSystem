@@ -8,10 +8,13 @@ import com.maksim.problemService.entity.Problem;
 import com.maksim.problemService.entity.ProblemConstraints;
 import com.maksim.problemService.service.ProblemService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 public class ProblemController {
@@ -26,7 +29,7 @@ public class ProblemController {
     public ResponseEntity<Object> getProblemById(@PathVariable Integer id){
         var opt = problemService.findById(id);
         if (!opt.isPresent()){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorMessage("No user found with id " + id));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorMessage("No problem found with id " + id));
         }
         return ResponseEntity.ok(opt.get());
     }
@@ -52,7 +55,7 @@ public class ProblemController {
         return ResponseEntity.ok(page);
     }
 
-    @PostMapping("/problem")
+    @PostMapping(value ="/problem", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Object> createProblem(@ModelAttribute ProblemCreateDto problemCreateDto){
         int userId = 1;
         try {
@@ -61,6 +64,12 @@ public class ProblemController {
         } catch (Exception ex){
             return ResponseEntity.badRequest().body(new ErrorMessage(ex.getMessage()));
         }
+    }
+
+    @PostMapping("/test")
+    public ResponseEntity<Object> test(@RequestParam List<MultipartFile> file){
+        System.out.println("NICE");
+        return ResponseEntity.ok().build();
     }
 
 

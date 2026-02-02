@@ -11,6 +11,7 @@ import com.maksim.problemService.entity.ProblemConstraints;
 import com.maksim.problemService.entity.Problem;
 import com.maksim.problemService.repository.ProblemRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
@@ -21,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.function.support.RouterFunctionMapping;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
@@ -36,12 +38,14 @@ public class ProblemService {
     private final ProblemRepository problemRepository;
     private final ProblemCreateDtoValidator problemCreateDtoValidator;
     private final RestTemplate restTemplate = new RestTemplate();
+    private final RouterFunctionMapping routerFunctionMapping;
     @Value("${test.service.url}")
     private String TEST_SERVICE_URL;
 
-    ProblemService(ProblemRepository pr, ProblemCreateDtoValidator problemCreateDtoValidator) {
+    ProblemService(ProblemRepository pr, ProblemCreateDtoValidator problemCreateDtoValidator, RouterFunctionMapping routerFunctionMapping) {
         this.problemRepository = pr;
         this.problemCreateDtoValidator = problemCreateDtoValidator;
+        this.routerFunctionMapping = routerFunctionMapping;
     }
 
     public Optional<Problem> findById(int id) {
@@ -63,16 +67,18 @@ public class ProblemService {
     public Problem createProblem(ProblemCreateDto problemCreateDto, int creatorId) throws IOException {
         problemCreateDtoValidator.validateCreateProblemDto(problemCreateDto);
 
-        ObjectMapper mapper = new ObjectMapper();
-        Problem problem = mapper.convertValue(problemCreateDto,Problem.class);
+        Problem problem = new Problem();
+        BeanUtils.copyProperties(problemCreateDto,problem);
         problem.setCreatorId(creatorId);
 
         var saveTestsDto = new SendTestCasesToJudgeServiceDto();
+
         saveTestsDto.setCountOfTestCases(problemCreateDto.getTestCasesNum());
         saveTestsDto.setCheckerType(problemCreateDto.getCheckerType());
 
         if (saveTestsDto.getCheckerType() == CheckerType.CUSTOM_CHECKER){
             saveTestsDto.setCheckerSourceCode(problemCreateDto.getFileSourceChecker().getBytes());
+            saveTestsDto.setCheckerLanguage(problemCreateDto.getCheckerLanguage());
         }
         for (var el : problemCreateDto.getInputTestCases()) {
             saveTestsDto.getTestFilesContent().add(el.getBytes());
@@ -84,9 +90,10 @@ public class ProblemService {
         }
 
         problem = problemRepository.save(problem);
-        ResponseEntity<Object> response = restTemplate.postForEntity("localhost:123", saveTestsDto, Object.class);
+        saveTestsDto.setProblemId(problem.getId());
+        ResponseEntity<String> response = restTemplate.postForEntity("http://" + TEST_SERVICE_URL + "/append-tests", saveTestsDto, String.class);
         if (response.getStatusCode() != HttpStatus.OK){
-            throw new RuntimeException("Can't save tests in test service");
+            throw new RuntimeException(response.getBody());
         }
         return problem;
     }

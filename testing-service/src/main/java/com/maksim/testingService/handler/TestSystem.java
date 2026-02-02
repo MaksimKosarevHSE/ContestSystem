@@ -1,6 +1,7 @@
 package com.maksim.testingService.handler;
 
 import com.maksim.testingService.DTO.VerdictInfo;
+import com.maksim.testingService.entity.TestsMetadata;
 import com.maksim.testingService.enums.Status;
 import com.maksim.testingService.event.SolutionSubmittedEvent;
 import com.maksim.testingService.exceptions.*;
@@ -9,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.ObjectMapper;
 
 
 import java.io.*;
@@ -33,9 +35,7 @@ public class TestSystem {
 
     public void processSubmission(SolutionSubmittedEvent submissionMeta, int workerId) throws IOException, InterruptedException {
             try {
-                submissionMeta.setTimeLimit(5);
                 log.debug("Worker {} started to test submission {}", workerId, submissionMeta.getSubmissionId());
-                log.info("{}",submissionMeta);
                 var verdictInfo = new VerdictInfo();
                 Path sessionDir = Files.createTempDirectory(Path.of(PATH_TO_SESSION_STORE), null);
                 log.info("PATH: {}", sessionDir.toAbsolutePath().toString());
@@ -48,7 +48,7 @@ public class TestSystem {
                     log.debug("Compilation stage of submission {} passed success", submissionMeta.getSubmissionId());
                 }
                 log.debug("Start testing stage of submission {} ", submissionMeta.getSubmissionId());
-                testSolution(compiledFile, sessionDir, submissionMeta, verdictInfo);
+                testSolution(compiledFile, submissionMeta, verdictInfo);
                 log.debug("Submission {} was tested successfully with verdict {}", submissionMeta.getSubmissionId(), verdictInfo);
 
                 // пишем в бд результат, отправляем в нотификэйшн сервис
@@ -66,9 +66,10 @@ public class TestSystem {
     }
 
 
-    private void testSolution(Path compiledFile, Path sessionDir, SolutionSubmittedEvent submissionMeta, VerdictInfo verdictInfo) throws IOException, InterruptedException {
+    private void testSolution(Path compiledFile, SolutionSubmittedEvent submissionMeta, VerdictInfo verdictInfo) throws IOException, InterruptedException {
         Path judgeTestDir = Path.of(PATH_TO_TESTS).resolve("problem_" + submissionMeta.getProblemId());
-        int testsCnt = Integer.parseInt(Files.readString(judgeTestDir.resolve("meta.txt")));
+        TestsMetadata meta = new ObjectMapper().readValue(judgeTestDir.resolve("meta.json"), TestsMetadata.class);
+        int testsCnt = meta.getTestCount();
 
         for (int i = 1; i <= testsCnt; i++) {
             ProcessBuilder pb = new ProcessBuilder();
@@ -161,6 +162,8 @@ public class TestSystem {
             }
         }
     }
+
+
 }
 
 

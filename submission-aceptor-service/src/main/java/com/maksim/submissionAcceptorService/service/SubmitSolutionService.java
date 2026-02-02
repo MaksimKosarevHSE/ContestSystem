@@ -43,7 +43,7 @@ public class SubmitSolutionService {
     }
 
 
-    public long createSubmission(SubmitSolutionTextDto solution, int userId) throws ExecutionException, InterruptedException {
+    public long  createSubmission(SubmitSolutionTextDto solution, int userId) throws ExecutionException, InterruptedException {
         ProblemDto problem = getProblemConstraints(solution.getProblemId());
         if (problem == null)
             throw new RuntimeException("No problem found with id " + solution.getProblemId());
@@ -56,7 +56,7 @@ public class SubmitSolutionService {
     }
 
     private ProblemDto getProblemConstraints(int problemId) {
-        ResponseEntity<ProblemDto> response = restTemplate.getForEntity(PROBLEM_SERVICE_URL + "/problem/{id}/constraints",
+        ResponseEntity<ProblemDto> response = restTemplate.getForEntity("http://"+PROBLEM_SERVICE_URL + "/problem/{id}/constraints",
                 ProblemDto.class, problemId);
         if (response.getStatusCode() == HttpStatus.OK) {
             return response.getBody();

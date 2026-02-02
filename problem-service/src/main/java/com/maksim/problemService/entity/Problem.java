@@ -15,9 +15,9 @@ import java.util.List;
 public class Problem {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private int id;
+    private Integer id;
     @Column(name = "creator_id")
-    private int creatorId;
+    private Integer creatorId;
     @Column(name = "title")
     private String title;
     @Column(name = "statement")
@@ -29,19 +29,19 @@ public class Problem {
     @Column(name = "notes")
     private String notes;
     @Column(name = "sample_count")
-    private int samplesCount;
+    private Integer samplesCount;
     @Column(name = "sample_input")
     private List<String> sampleInput;
     @Column(name = "sample_output")
     private List<String> sampleOutput;
     @Column(name = "complexity")
-    private int complexity;
+    private Integer complexity;
     @Column(name = "compile_time_limit")
-    private double compileTimeLimit;
+    private Double compileTimeLimit;
     @Column(name = "time_limit")
-    private double timeLimit;
+    private Double timeLimit;
     @Column(name = "memory_limit")
-    private double memoryLimit;
+    private Double memoryLimit;
 
     public Problem(int creatorId, String title,
                    String statement, String input,

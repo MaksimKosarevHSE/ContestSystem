@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.maksim</groupId>
-	<artifactId>SubmissionAceptorService</artifactId>
+	<artifactId>submission-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>submission-acceptor-service</name>
 	<description>Demo project for Spring Boot</description>
@@ -62,6 +62,13 @@
 			<version>3.14.0</version>
 			<scope>compile</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>42.7.8</version>
+			<scope>compile</scope>
+		</dependency>
+
 		<!-- Source: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-data-jpa -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
