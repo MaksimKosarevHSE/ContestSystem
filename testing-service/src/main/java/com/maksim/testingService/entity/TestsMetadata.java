@@ -1,6 +1,7 @@
 package com.maksim.testingService.entity;
 
 
+import com.maksim.testingService.enums.ProgrammingLanguage;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,4 +15,6 @@ public class TestsMetadata {
     private int problemId;
     private int testCount;
     private CheckerType checkerType;
+    private ProgrammingLanguage checkerLanguage;
+    private String checkerFileName;
 }

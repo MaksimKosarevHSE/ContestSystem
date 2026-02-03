@@ -1,7 +1,9 @@
 package com.maksim.testingService.handler;
 
 import com.maksim.testingService.DTO.VerdictInfo;
+import com.maksim.testingService.entity.CheckerType;
 import com.maksim.testingService.entity.TestsMetadata;
+import com.maksim.testingService.enums.ProgrammingLanguage;
 import com.maksim.testingService.enums.Status;
 import com.maksim.testingService.event.SolutionSubmittedEvent;
 import com.maksim.testingService.exceptions.*;
@@ -16,8 +18,12 @@ import tools.jackson.databind.ObjectMapper;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 
 @Service
@@ -28,8 +34,10 @@ import java.util.concurrent.TimeUnit;
 public class TestSystem {
     private final String PATH_TO_TESTS = "judge/tests";
     private final String PATH_TO_SESSION_STORE = "judge/sessions";
-    private final String OUTPUT_FILE_NAME = "output.txt";
     private final String SOURCE_FILE_NAME = "main";
+    private final int JUDGING_TIME_LIMIT = 10;
+    private final String CONTESTANT_OUT_FILE_NAME = "output.out";
+    private final String CHECKER_OUT_FILE_NAME = "checker_.out";
     private Random rand = new Random();
 
 
@@ -48,33 +56,35 @@ public class TestSystem {
                     log.debug("Compilation stage of submission {} passed success", submissionMeta.getSubmissionId());
                 }
                 log.debug("Start testing stage of submission {} ", submissionMeta.getSubmissionId());
-                testSolution(compiledFile, submissionMeta, verdictInfo);
+                testSolution(compiledFile, sessionDir, submissionMeta, verdictInfo);
                 log.debug("Submission {} was tested successfully with verdict {}", submissionMeta.getSubmissionId(), verdictInfo);
 
                 // пишем в бд результат, отправляем в нотификэйшн сервис
-            } catch (InterruptedException ex) {
+            } catch (InterruptedException | IOException ex) {
                 Thread.currentThread().interrupt();
-                log.error("Worker {} thread is interrupted. {}", workerId, ex.getMessage());
-                throw ex;
-            } catch (IOException ex) {
                 log.error("Server error while testing {}. {}", submissionMeta.getSubmissionId(), ex.getMessage());
                 throw ex;
-
             } catch (BadVerdict ex) {
                 log.debug("BadVerdict of submission {}. {}", submissionMeta.getSubmissionId(), ex.getMessage());
             }
     }
 
 
-    private void testSolution(Path compiledFile, SolutionSubmittedEvent submissionMeta, VerdictInfo verdictInfo) throws IOException, InterruptedException {
+    private void testSolution(Path compiledFile,Path sessionDir, SolutionSubmittedEvent submissionMeta, VerdictInfo verdictInfo) throws IOException, InterruptedException {
         Path judgeTestDir = Path.of(PATH_TO_TESTS).resolve("problem_" + submissionMeta.getProblemId());
         TestsMetadata meta = new ObjectMapper().readValue(judgeTestDir.resolve("meta.json"), TestsMetadata.class);
         int testsCnt = meta.getTestCount();
+        Path contestantOutFile = sessionDir.resolve(CONTESTANT_OUT_FILE_NAME);
+        Path checkerOutFile = sessionDir.resolve(CHECKER_OUT_FILE_NAME);
 
         for (int i = 1; i <= testsCnt; i++) {
+            Files.createFile(contestantOutFile);
+            Files.createFile(checkerOutFile);
+
             ProcessBuilder pb = new ProcessBuilder();
             pb.command(submissionMeta.getLanguage().getRunCommand(compiledFile));
-            pb.redirectInput(new File(judgeTestDir.resolve(i + ".in").toString()));
+            pb.redirectInput(judgeTestDir.resolve(i + ".in").toFile());
+            pb.redirectOutput(contestantOutFile.toFile());
 
             Process process = pb.start();
             long start = System.currentTimeMillis();
@@ -95,16 +105,53 @@ public class TestSystem {
                 verdictInfo.setStatus(Status.RUNTIME_ERROR);
                 throw new BadVerdict("Runtime error");
             }
-            exactMatchCheck(judgeTestDir.resolve(i + ".out"), process.getInputStream(), verdictInfo, i);
+
+            Path answerFile = judgeTestDir.resolve(i + ".out");
+            if (meta.getCheckerType() == CheckerType.DEFAULT_EXACT_MATCH_CHECKER){
+                exactMatchCheck(answerFile, contestantOutFile.toFile() , verdictInfo, i);
+            } else {
+                customChecker(judgeTestDir.resolve(meta.getCheckerFileName()),
+                        meta.getCheckerLanguage(),
+                        CONTESTANT_OUT_FILE_NAME,
+                        CHECKER_OUT_FILE_NAME,
+                        answerFile.toAbsolutePath().toString(),
+                        verdictInfo, i);
+            }
+
         }
 
         verdictInfo.setStatus(Status.OK);
     }
+    private void customChecker(Path checker, ProgrammingLanguage checkerLang,
+                               String contestantOutFile, String checkerOutFile, String answerFile,
+                               VerdictInfo verdictInfo, int testNum) throws IOException, InterruptedException {
+        String[] run = checkerLang.getRunCommand(checker);
+        var command = new ArrayList<>(List.of(run));
+        command.addAll(List.of(contestantOutFile, checkerOutFile, answerFile));
 
+        ProcessBuilder builder = new ProcessBuilder(command);
+        Process process = builder.start();
+        boolean successEnd = process.waitFor(JUDGING_TIME_LIMIT, TimeUnit.SECONDS);
+        if (!successEnd){
+            log.debug("Checker checks submission too much time");
+            throw new RuntimeException("Checker TL error");
+        }
+        switch (process.exitValue()){
+            case 0:
+                break;
+            case 1:
+                verdictInfo.setStatus(Status.WRONG_ANSWER);
+                verdictInfo.setNumOfFailureTest(testNum);
+                throw new BadVerdict(new String(Files.readAllBytes(Path.of(checkerOutFile))));
+            default:
+                log.debug("Checker RE error");
+                throw new RuntimeException("Checker RE error");
+        }
+    }
 
     private Path compileSolution(Path sessionDir, Path sourcePath, SolutionSubmittedEvent submission, VerdictInfo verdictInfo) throws IOException, InterruptedException {
         ProcessBuilder pb = new ProcessBuilder();
-        Path outputPath = sessionDir.resolve(OUTPUT_FILE_NAME);
+        Path outputPath = sessionDir.resolve("compilator.out");
         pb.redirectOutput(outputPath.toFile());
         pb.redirectErrorStream(true);
         String[] compileCommand = submission.getLanguage().getCompileCommand(sourcePath);
@@ -129,9 +176,9 @@ public class TestSystem {
     }
 
 
-    public static void exactMatchCheck(Path judgeSolution, InputStream contestantSolution, VerdictInfo verdictInfo, int testNum) throws IOException {
+    public void exactMatchCheck(Path judgeSolution, File contestantSolution, VerdictInfo verdictInfo, int testNum) throws IOException {
         try (BufferedReader judgeReader = new BufferedReader(new FileReader(judgeSolution.toFile()));
-             BufferedReader conReader = new BufferedReader(new InputStreamReader(contestantSolution))) {
+             BufferedReader conReader = new BufferedReader(new FileReader(contestantSolution))) {
 
             int lineCnt = 1;
             String line1, line2;
@@ -143,6 +190,7 @@ public class TestSystem {
                 }
                 if (line1 == null || line2 == null) {
                     verdictInfo.setNumOfFailureTest(testNum);
+                    verdictInfo.setStatus(Status.WRONG_ANSWER);
                     String msg;
                     if (line1 == null)
                         msg = "The number of lines is less than that of the judge's solution";
@@ -156,6 +204,7 @@ public class TestSystem {
 
                 if (!line1.equals(line2)) {
                     verdictInfo.setNumOfFailureTest(testNum);
+                    verdictInfo.setStatus(Status.WRONG_ANSWER);
                     throw new BadVerdict("The line " +  lineCnt + " is different from the judge's solution");
                 }
                 lineCnt++;
