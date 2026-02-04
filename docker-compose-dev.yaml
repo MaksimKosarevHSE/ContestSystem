@@ -39,6 +39,12 @@ services:
     networks:
       - external
 
+  redis:
+    image: redis:8.4
+    ports:
+    - "6379:6379"
+    networks:
+      - external
 
 networks:
   external:

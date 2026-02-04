@@ -27,12 +27,15 @@ public class Submission {
     private String source;
     @Column(name = "language")
     private ProgrammingLanguage programmingLanguage;
+    @Column(name = "status")
+    private Status status;
 
-    public Submission(int userId, int problemId, LocalDateTime time, String source, ProgrammingLanguage lang) {
+    public Submission(int userId, int problemId, LocalDateTime time, String source, ProgrammingLanguage lang, Status status) {
         this.userId = userId;
         this.problemId = problemId;
         this.time = time;
         this.source = source;
         this.programmingLanguage = lang;
+        this.status = status;
     }
 }

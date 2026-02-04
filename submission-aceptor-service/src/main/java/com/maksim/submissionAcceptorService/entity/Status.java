@@ -1,4 +1,4 @@
-package com.maksim.testingService.enums;
+package com.maksim.submissionAcceptorService.entity;
 
 public enum Status {
     IN_QUEUE, TESTING, OK, TIME_LIMIT, MEMORY_LIMIT,

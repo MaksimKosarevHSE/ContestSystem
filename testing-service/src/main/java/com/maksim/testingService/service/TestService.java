@@ -30,16 +30,11 @@ public class TestService {
                 Path filePath = Files.createFile(problemDir.resolve(dto.getTestFilesNames().get(i)));
                 Files.write(filePath, dto.getTestFilesContent().get(i));
             }
-
-            String metaData = new ObjectMapper().writeValueAsString(
-                    new TestsMetadata(dto.getProblemId(), dto.getCountOfTestCases(), dto.getCheckerType())
-            );
-
-            Path metaFile = Files.createFile(problemDir.resolve("meta.json"));
-            Files.writeString(metaFile, metaData);
+            var metaData = new TestsMetadata(dto.getProblemId(), dto.getCountOfTestCases(), dto.getCheckerType(), dto.getCheckerLanguage(), null );
 
             if (dto.getCheckerType() == CheckerType.CUSTOM_CHECKER) {
                 Path checkerFile = Files.createFile(problemDir.resolve("checker" + dto.getCheckerLanguage().sourceSuffix));
+                metaData.setCheckerFileName("checker" + dto.getCheckerLanguage().compiledSuffix);
                 Files.write(checkerFile, dto.getCheckerSourceCode());
                 if (dto.getCheckerLanguage().needCompilation) {
                     ProcessBuilder builder = new ProcessBuilder();
@@ -53,6 +48,12 @@ public class TestService {
                     Files.delete(checkerFile);
                 }
             }
+
+            String metaDataJson = new ObjectMapper().writeValueAsString(metaData);
+
+            Path metaFile = Files.createFile(problemDir.resolve("meta.json"));
+            Files.writeString(metaFile, metaDataJson);
+
         } catch (IOException | InterruptedException | JuryCompilationException ex) {
             ex.printStackTrace();
             log.error("Exception occur while saving test files {}", ex.getMessage());

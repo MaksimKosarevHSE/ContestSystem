@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Test</title>
+    <!-- Важно: правильная версия SockJS -->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+</head>
+<body>
+ 
+
+    <script>
+        function not(msg){
+            console.log(msg)
+        }
+    var socket = new SockJS("http://localhost:8002/ws");
+    var client = Stomp.over(socket);
+    var onConnect = function () {
+        client.subscribe("/topic/msg", not)
+        // for (var i = 0; i < allEndpoints.length; i++) {
+        //     client.subscribe("/topic/update/" );
+        // }
+    }
+    client.connect('user', 'user', onConnect);
+
+
+    </script>
+</body>
+</html>
