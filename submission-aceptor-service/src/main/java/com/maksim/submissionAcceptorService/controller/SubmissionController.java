@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("submission")
+@CrossOrigin
 @Slf4j
 public class SubmissionController {
     private SubmissionService submissionService;
@@ -31,6 +32,11 @@ public class SubmissionController {
         return ResponseEntity.ok(dto);
     }
 
+    @GetMapping
+    public ResponseEntity<Object> getAllSubmissions(){ // для тестов
+        var list = submissionService.getAllSubmissions();
+        return ResponseEntity.ok(list);
+    }
 
     @PostMapping("/text")
     public ResponseEntity<Object> submitSolution(@RequestBody SubmitSolutionTextDto solution){

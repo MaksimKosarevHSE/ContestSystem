@@ -1,22 +1,19 @@
-package com.maksim.testingService.event;
+package com.maksim.submissionAcceptorService.dto;
 
-import com.maksim.testingService.enums.Status;
+import com.maksim.submissionAcceptorService.entity.Status;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-
-@Setter
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class JudgingProgress {
+public class SolutionJudgedEvent {
     private long submissionId;
     private Status status;
     private int testNum;
-    private LocalDateTime time;
     private int memory;
     private int executionTime;
 }

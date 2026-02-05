@@ -13,6 +13,8 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.util.concurrent.ExecutionException;
 
 @Component
 public class SolutionSubmittedEventHandler {
@@ -26,10 +28,10 @@ public class SolutionSubmittedEventHandler {
     }
 
     @Transactional
-    @KafkaListener(topics="solution-submitted-event-topic", containerFactory = "factory1")
+    @KafkaListener(topics="solution-submitted-event-topic", containerFactory = "factory1", concurrency = "2")
     public void handle(@Payload SolutionSubmittedEvent solutionEvent,
                        @Header("messageId") String msgId,
-                       @Header(KafkaHeaders.RECEIVED_KEY) Integer key) throws IOException, InterruptedException {
+                       @Header(KafkaHeaders.RECEIVED_KEY) Integer key) throws IOException, InterruptedException, ExecutionException {
 
         ProcessedEvent ev = processedEventRepository.findByMessageId(msgId);
         if (ev != null) return;

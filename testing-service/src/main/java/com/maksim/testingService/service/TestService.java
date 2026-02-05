@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 @Service
 @Slf4j
 public class TestService {
-    private final String TEST_DIR_PATH = "judge/tests";
+    private final String TEST_DIR_PATH = "/judge/tests";
     private final int JURY_COMPILATION_TIME_LIMIT = 10;
 
     public void saveTests(SaveTestsDto dto) throws IOException, InterruptedException, JuryCompilationException {

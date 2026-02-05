@@ -2,6 +2,7 @@ package com.maksim.submissionAcceptorService.service;
 
 import com.maksim.submissionAcceptorService.dto.GetSubmissionDto;
 import com.maksim.submissionAcceptorService.dto.ProblemDto;
+import com.maksim.submissionAcceptorService.dto.SolutionJudgedEvent;
 import com.maksim.submissionAcceptorService.dto.SubmitSolutionTextDto;
 import com.maksim.submissionAcceptorService.entity.Status;
 import com.maksim.submissionAcceptorService.entity.Submission;
@@ -18,6 +19,8 @@ import org.springframework.web.client.RestTemplate;
 import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
@@ -45,6 +48,9 @@ public class SubmissionService {
         this.restTemplate = rest;
     }
 
+    public List<GetSubmissionDto> getAllSubmissions(){
+        return submissionRepository.customFindAll();
+    }
     public GetSubmissionDto getSubmission(long id){
         Submission submission = submissionRepository.findById(id).orElseThrow(() -> new RuntimeException("No submission with id " + id + " found"));
         return new ObjectMapper().convertValue(submission, GetSubmissionDto.class);
@@ -55,7 +61,7 @@ public class SubmissionService {
         if (problem == null)
             throw new RuntimeException("No problem found with id " + solution.getProblemId());
 
-        Submission submission = new Submission(userId, problem.getId(), LocalDateTime.now(), solution.getSource(), solution.getLanguage(), Status.IN_QUEUE);
+        Submission submission = new Submission(userId, problem.getId(), LocalDateTime.now(), solution.getSource(), solution.getLanguage(), Status.IN_QUEUE, 0, 0, 0);
         submission = submissionRepository.save(submission);
         sendSubmissionEvent(submission, problem);
         return submission.getId();
@@ -81,12 +87,21 @@ public class SubmissionService {
                 p.getMemoryLimit(),
                 p.getCompileTimeLimit());
 
-        var record = new ProducerRecord<>(TOPIC_NAME, s.getUserId(), event);
+        var record = new ProducerRecord<>(TOPIC_NAME, new Random(System.currentTimeMillis()).nextInt(), event);
         record.headers().add("messageId", UUID.randomUUID().toString().getBytes());
-
         var sendResult = kafkaTemplate.send(record).get();
-        log.debug("Message has been sent to topic {} in partitions {}", TOPIC_NAME, sendResult.getRecordMetadata().partition());
+
+//        var sendResult = kafkaTemplate.send(TOPIC_NAME, event).get();
+
+        log.error("Message has been sent to topic {} in partitions {}", TOPIC_NAME, sendResult.getRecordMetadata().partition());
     }
 
+    public void saveVerdict(SolutionJudgedEvent ev){
+        Submission submission = submissionRepository.findById(ev.getSubmissionId()).get();
+        submission.setStatus(ev.getStatus());
+        submission.setExecutionTime(ev.getExecutionTime());
+        submission.setTestNum(ev.getTestNum());
+        submission.setUsedMemory(ev.getMemory());
+    }
 
 }

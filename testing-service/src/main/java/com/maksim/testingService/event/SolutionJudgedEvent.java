@@ -8,15 +8,14 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-@Setter
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class JudgingProgress {
+public class SolutionJudgedEvent {
     private long submissionId;
     private Status status;
     private int testNum;
-    private LocalDateTime time;
     private int memory;
     private int executionTime;
 }

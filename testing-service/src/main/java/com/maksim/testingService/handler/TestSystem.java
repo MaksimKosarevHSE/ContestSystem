@@ -6,6 +6,7 @@ import com.maksim.testingService.entity.TestsMetadata;
 import com.maksim.testingService.event.JudgingProgress;
 import com.maksim.testingService.enums.ProgrammingLanguage;
 import com.maksim.testingService.enums.Status;
+import com.maksim.testingService.event.SolutionJudgedEvent;
 import com.maksim.testingService.event.SolutionSubmittedEvent;
 import com.maksim.testingService.exceptions.*;
 import lombok.Getter;
@@ -15,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.message.SimpleMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.simp.SimpMessageType;
@@ -33,6 +35,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 
@@ -48,19 +51,23 @@ public class TestSystem {
     private final String CONTESTANT_OUT_FILE_NAME = "output.out";
     private final String CHECKER_OUT_FILE_NAME = "checker_.out";
     private final Duration TTL = Duration.ofMinutes(5);
-    private SimpMessagingTemplate msgTemplate;
+
     private Random rand = new Random();
-
+    @Value("${testing.solution.judged.event.topic}")
+    private String SUBMISSION_JUDGED_EVENT_TOPIC;
+    private SimpMessagingTemplate msgTemplate;
     private ReactiveRedisTemplate<String, JudgingProgress> redisTemplate;
+    private KafkaTemplate<Integer, SolutionJudgedEvent> kafkaTemplate;
 
-    public TestSystem(@Qualifier("asRedis") ReactiveRedisTemplate<String, JudgingProgress> redisTemplate, SimpMessagingTemplate tmp) {
+    public TestSystem(@Qualifier("asRedis") ReactiveRedisTemplate<String, JudgingProgress> redisTemplate, SimpMessagingTemplate tmp, KafkaTemplate<Integer, SolutionJudgedEvent> kafkaTemplate) {
         this.msgTemplate = tmp;
         this.redisTemplate = redisTemplate;
+        this.kafkaTemplate = kafkaTemplate;
     }
 
     //    @Autowired
 //    private KafkaTemplate<>
-    public void processSubmission(SolutionSubmittedEvent submissionMeta, int workerId) throws IOException, InterruptedException {
+    public void processSubmission(SolutionSubmittedEvent submissionMeta, int workerId) throws IOException, InterruptedException, ExecutionException {
             var verdictInfo = new VerdictInfo();
             try {
                 log.debug("Worker {} started to test submission {}", workerId, submissionMeta.getSubmissionId());
@@ -83,6 +90,11 @@ public class TestSystem {
             } catch (BadVerdict ex) {
                 log.debug("BadVerdict of submission {}. {}", submissionMeta.getSubmissionId(), ex.getMessage());
             }
+
+            kafkaTemplate.send(SUBMISSION_JUDGED_EVENT_TOPIC, new SolutionJudgedEvent(submissionMeta.getSubmissionId(), verdictInfo.getStatus(), verdictInfo.getNumOfFailureTest(), verdictInfo.getUsedMemory(), verdictInfo.getExecutionTime())).get();
+            sendJudgingProgress(submissionMeta.getSubmissionId(), verdictInfo.getStatus(), verdictInfo.getNumOfFailureTest(),verdictInfo.getExecutionTime(),verdictInfo.getUsedMemory());
+
+            // пока временное DTO в бд (только статус с данными тестирования)
             // в кафку в сервис посылок -> (в бд, redis) -> нотификэйшн сервис
     }
 
@@ -95,9 +107,9 @@ public class TestSystem {
 //        Path checkerOutFile = sessionDir.resolve(CHECKER_OUT_FILE_NAME);
 
         for (int i = 1; i <= testsCnt; i++) {
-            sendJudgingProgress(submissionMeta.getSubmissionId(), Status.TESTING, i); // async
+            sendJudgingProgress(submissionMeta.getSubmissionId(), Status.TESTING, i, -1, -1); // async
 //            log.debug("START " + i);
-            System.out.println("START " + i);
+//            System.out.println("START " + i);
 //            Files.createFile(contestantOutFile);
 //            Files.createFile(checkerOutFile);
 
@@ -137,7 +149,7 @@ public class TestSystem {
 
             Path answerFile = judgeTestDir.resolve(i + ".out");
             if (meta.getCheckerType() == CheckerType.DEFAULT_EXACT_MATCH_CHECKER){
-//                exactMatchCheck(answerFile, contestantOutFile.toFile() , verdictInfo, i);
+                exactMatchCheck(answerFile, contestantOutFile.toFile() , verdictInfo, i);
             } else {
                 customChecker(judgeTestDir.resolve(meta.getCheckerFileName()),
                         meta.getCheckerLanguage(),
@@ -146,16 +158,15 @@ public class TestSystem {
                         answerFile.toAbsolutePath().toString(),
                         verdictInfo, i);
             }
-            System.out.println("END " + i);
-            System.out.println();
+//            System.out.println("END " + i);
+//            System.out.println();
         }
 
         verdictInfo.setStatus(Status.OK);
     }
 
-    private void sendJudgingProgress(long submissionId, Status status, int testNum){
-        var event = new JudgingProgress(submissionId, status, testNum, LocalDateTime.now());
-        msgTemplate.convertAndSend("/topic/msg", new JudgingProgress(submissionId, status, testNum, LocalDateTime.now()));
+    public void sendJudgingProgress(long submissionId, Status status, int testNum, int executionTime, int memory){
+        msgTemplate.convertAndSend("/topic/msg", new JudgingProgress(submissionId, status, testNum, LocalDateTime.now(), executionTime, memory));
 //        redisTemplate.opsForValue().set("sub:" + String.valueOf(submissionId), event, TTL).doOnError((error -> log.error("Error when sent progress in Redis"))).doOnSuccess(result-> System.out.println("SUCCESS")).subscribe();
     }
 

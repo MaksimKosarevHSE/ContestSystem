@@ -19,5 +19,7 @@ public class GetSubmissionDto {
     private int problemId;
     private LocalDateTime time;
     private ProgrammingLanguage programmingLanguage;
-    private Status statusstatus;
+    private Status status;
+    private int executionTime;
+    private int usedMemory;
 }
