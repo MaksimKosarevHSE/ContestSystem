@@ -1,5 +1,6 @@
 package com.maksim.submissionAcceptorService.entity;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,6 +22,9 @@ public class Submission {
     private int userId;
     @Column(name = "problem_id")
     private int problemId;
+    @Column(name = "contest_id")
+    @Nullable
+    private Integer contestId;
     @Column(name = "sent_while_contest")
     private boolean sentWhileContest;
     @Column(name = "time")
@@ -38,7 +42,7 @@ public class Submission {
     @Column(name = "test_num")
     private int testNum;
 
-    public Submission(int userId, int problemId, LocalDateTime time, String source, ProgrammingLanguage programmingLanguage, Status status, int executionTime, int usedMemory, int testNum) {
+    public Submission(int userId, int problemId, Integer contestId, boolean sentWhileContest, LocalDateTime time, String source, ProgrammingLanguage programmingLanguage, Status status, int executionTime, int usedMemory, int testNum) {
         this.userId = userId;
         this.problemId = problemId;
         this.time = time;

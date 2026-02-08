@@ -49,26 +49,41 @@ public class SubmissionService {
         this.restTemplate = rest;
     }
 
+    // Сабмит решения задачи из праблем сета
     public long submitPracticeSolution(int problemId, int userId, SubmissionRequestDto solution) throws IOException, ExecutionException, InterruptedException {
         ProblemConstraintsDto problem = getProblemConstraints(problemId);
         if (problem == null)
             throw new RuntimeException("No problem found with id " + problemId);
         String source = extractSource(solution);
-        Submission submission = new Submission(userId, problemId, LocalDateTime.now(), source, solution.getLanguage(), Status.IN_QUEUE, 0, 0, 0);
+        Submission submission = new Submission(userId, problemId, null, false, LocalDateTime.now(), source, solution.getLanguage(), Status.IN_QUEUE, 0, 0, 0);
         submission = submissionRepository.save(submission);
         sendSubmissionEvent(submission, problem, null);
         return submission.getId();
     }
 
-
-    public List<GetSubmissionDto> getAllSubmissions() {
-        return submissionRepository.customFindAll();
+    // Получение ОК посылок для отображения для каджой задачи из праблем сета
+    public Page<GetSubmissionDto> getSuccessPracticeSubmissions(Integer problemId, Integer page) {
+        return submissionRepository.getSubmissionsByProblemIdAndStatus(problemId, null, Status.OK, PageRequest.of(page, PAGE_SIZE));
     }
 
-    public GetSubmissionDto getSubmission(long id) {
-        Submission submission = submissionRepository.findById(id).orElseThrow(() -> new RuntimeException("No submission with id " + id + " found"));
-        return new ObjectMapper().convertValue(submission, GetSubmissionDto.class);
+    // все посылки юзера по тренировочным задачам
+    public Page<GetSubmissionDto> getAllUserPracticeSubmissions(Integer userId, Integer pageNum) {
+        return submissionRepository.getAllSubmissionsByUserId(userId, null, PageRequest.of(pageNum, PAGE_SIZE));
     }
+    // посылки юзера по тренировочной задаче
+    public Page<GetSubmissionDto> getUserPracticeSubmissions(Integer userId, Integer problemId, Integer pageNum) {
+        return submissionRepository.getSubmissionByUserIdAndProblemIdAndContestId(userId, problemId, null, PageRequest.of(pageNum, PAGE_SIZE));
+    }
+
+    public SubmissionDetailsDto getSubmissionDetails(Long submissionId, int userId) {
+        // TODO проверить есть ли у пользователя права на просмотр
+        var submission = submissionRepository.findById(submissionId).orElseThrow(() -> new RuntimeException("No submission found with id " + submissionId));
+        return new ObjectMapper().convertValue(submission, SubmissionDetailsDto.class);
+    }
+
+
+
+
 
 
     private String extractSource(SubmissionRequestDto solution) throws IOException {
@@ -121,12 +136,4 @@ public class SubmissionService {
     }
 
 
-    public Page<GetSubmissionDto> getUserSubmissions(Integer problemId, Integer userId, Integer pageNum) {
-        return submissionRepository.getSubmissionByProblemIdAndUserId(problemId, userId, PageRequest.of(pageNum, PAGE_SIZE));
-
-    }
-
-    public Page<GetSubmissionDto> getSuccessPracticeSubmissions(Integer problemId, Integer page) {
-        return submissionRepository.getSubmissionByProblemIdAndStatus(problemId, PageRequest.of(page, PAGE_SIZE));
-    }
 }
