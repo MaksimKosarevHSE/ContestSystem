@@ -21,6 +21,8 @@ public class Submission {
     private int userId;
     @Column(name = "problem_id")
     private int problemId;
+    @Column(name = "sent_while_contest")
+    private boolean sentWhileContest;
     @Column(name = "time")
     private LocalDateTime time;
     @Column(name = "source", length = 50_000)

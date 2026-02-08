@@ -9,7 +9,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
-public class ProblemDto {
+public class ProblemConstraintsDto {
     private int id;
     private double compileTimeLimit;
     private double timeLimit;
