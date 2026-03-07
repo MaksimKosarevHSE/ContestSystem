@@ -6,6 +6,8 @@ import com.maksim.problemService.dto.problem.ProblemSignature;
 import com.maksim.problemService.entity.Problem;
 import com.maksim.problemService.entity.ProblemConstraints;
 import com.maksim.problemService.service.ContestService;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,8 +41,9 @@ public class ContestController {
 
     //все публичные контесты TESTED
     @GetMapping("/contests")
-    public ResponseEntity<Object> getAllPublicContests(@RequestParam(defaultValue = "1") Integer page) {
+    public ResponseEntity<Object> getAllPublicContests(@RequestParam(defaultValue = "1") Integer page, HttpServletRequest req) {
         List<ContestSignatureDto> list = contestService.getPublicContests(page, PAGE_SIZE);
+        System.out.println(req.getHeader("X-User-Handle"));
         return ResponseEntity.ok(list);
     }
 

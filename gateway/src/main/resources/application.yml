@@ -52,3 +52,7 @@ spring:
 
 server:
   port: 8080
+
+auth:
+  service:
+    url: "localhost:8005"
