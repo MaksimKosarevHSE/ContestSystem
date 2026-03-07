@@ -1,31 +1,3 @@
-#spring:
-#  application:
-#    name: api-gateway
-#  cloud:
-#    gateway:
-#      routes:
-#        - id: auth-service
-#          uri: http://auth-service:8003
-#          predicates:
-#            - Path=/api/auth/**
-#        - id: problem-contest-service
-#          uri: http://problem-service:8000
-#          predicates:
-#            - Path=api/contest/**
-#            - Path=api/contests/**
-#            - Path=api/problem/**
-#            - Path=api/problems/**
-#        - id: submission-service
-#          uri: http://submission-service:8001
-#          predicates:
-#            - Path=/api/submissions
-#        - id: judging-service
-#          uri: http://judging-service:8002
-#          predicates:
-#            - Path=/api/judgements/**
-#
-#server:
-#  port: 8080
 spring:
   application:
     name: api-gateway

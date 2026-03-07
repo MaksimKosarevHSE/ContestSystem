@@ -1,13 +1,14 @@
-FROM maven:4.0.0-rc-5-eclipse-temurin-21-alpine as build
+FROM maven:4.0.0-rc-5-eclipse-temurin-21-alpine AS build
 WORKDIR /app
+
 COPY pom.xml .
-RUN mvn dependency:resolve
+RUN mvn dependency:go-offline -B
 
 COPY src ./src
-RUN mvn clean package
+RUN mvn clean package -DskipTests
 
-FROM openjdk:27-ea-jdk-oracle
-
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
-
-CMD ["java", "-jar", "/app.jar"]
+EXPOSE 8001
+ENTRYPOINT ["java", "-jar", "app.jar"]
