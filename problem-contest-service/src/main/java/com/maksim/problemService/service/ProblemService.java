@@ -5,7 +5,7 @@ import com.maksim.problemService.dto.problem.ProblemCreateDto;
 import com.maksim.problemService.dto.problem.ProblemSignature;
 import com.maksim.problemService.event.SendTestCasesToJudgeServiceDto;
 import com.maksim.problemService.exception.ResourceNotFoundException;
-import com.maksim.problemService.validators.ProblemCreateDtoValidator;
+import com.maksim.problemService.validators.ProblemValidator;
 import com.maksim.problemService.entity.CheckerType;
 import com.maksim.problemService.entity.ProblemConstraints;
 import com.maksim.problemService.entity.Problem;
@@ -22,23 +22,22 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
-import java.util.Optional;
 
 @Service
 @Transactional
 public class ProblemService {
     private final ProblemRepository problemRepository;
 
-    private final ProblemCreateDtoValidator problemCreateDtoValidator;
+    private final ProblemValidator problemValidator;
 
     private final RestTemplate restTemplate = new RestTemplate();
 
     @Value("${test.service.url}")
     private String TEST_SERVICE_URL;
 
-    ProblemService(ProblemRepository pr, ProblemCreateDtoValidator problemCreateDtoValidator) {
+    ProblemService(ProblemRepository pr, ProblemValidator problemValidator) {
         this.problemRepository = pr;
-        this.problemCreateDtoValidator = problemCreateDtoValidator;
+        this.problemValidator = problemValidator;
     }
 
     public Problem findById(int id) {
@@ -55,8 +54,8 @@ public class ProblemService {
         return problemRepository.getProblemsSignatures(PageRequest.of(pageNumber, pageSize));
     }
 
-    public Problem createProblem(ProblemCreateDto problemCreateDto, int creatorId) throws IOException {
-        problemCreateDtoValidator.validateCreateProblemDto(problemCreateDto);
+    public Problem createProblem(ProblemCreateDto problemCreateDto, int creatorId) throws IOException{
+        problemValidator.validate(problemCreateDto);
 
         Problem problem = new Problem();
         BeanUtils.copyProperties(problemCreateDto,problem);
