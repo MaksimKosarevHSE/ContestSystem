@@ -57,6 +57,7 @@ public class ProblemSetController {
     }
 
     @GetMapping("/problem/signature")
+    @Operation(summary = "Get problem signature")
     public ResponseEntity<Object> getProblemsSignatures(@RequestParam(defaultValue = "1") Integer num) {
         var page = problemService.getProblemsSignaturesPage(num - 1, PAGE_SIZE);
         return ResponseEntity.ok(page);
