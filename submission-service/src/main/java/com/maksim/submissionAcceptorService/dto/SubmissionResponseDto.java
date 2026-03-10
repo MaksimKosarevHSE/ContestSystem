@@ -1,7 +1,7 @@
 package com.maksim.submissionAcceptorService.dto;
 
-import com.maksim.submissionAcceptorService.entity.ProgrammingLanguage;
-import com.maksim.submissionAcceptorService.entity.Status;
+import com.maksim.submissionAcceptorService.enums.ProgrammingLanguage;
+import com.maksim.submissionAcceptorService.enums.Status;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class GetSubmissionDto {
+public class SubmissionResponseDto {
     private long id;
     private int userId;
     private int problemId;

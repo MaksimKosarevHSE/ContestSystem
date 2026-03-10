@@ -1,18 +1,13 @@
 package com.maksim.submissionAcceptorService.dto;
 
-import com.maksim.submissionAcceptorService.entity.ProgrammingLanguage;
-import com.maksim.submissionAcceptorService.entity.Status;
-import jakarta.annotation.Nullable;
-import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.maksim.submissionAcceptorService.enums.ProgrammingLanguage;
+import com.maksim.submissionAcceptorService.enums.Status;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
 @Data
-public class SubmissionDetailsDto {
+public class SubmissionDetailsResponseDto {
     private long id;
     private int userId;
     private int problemId;

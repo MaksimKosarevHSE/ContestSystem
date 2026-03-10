@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Getter
 @Setter
-public class ProblemConstraintsDto {
+public class ProblemConstraintsResponseDto {
     private int id;
     private double compileTimeLimit;
     private double timeLimit;

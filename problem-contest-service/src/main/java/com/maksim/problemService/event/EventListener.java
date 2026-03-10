@@ -13,7 +13,7 @@ public class EventListener {
         this.standingsService = sc;
     }
 
-    @KafkaListener(topics = "contest-submission-was-tested-event-topic", containerFactory = "factory1")
+    @KafkaListener(topics = "standings-update-event-topic", containerFactory = "factory1")
     private void standingsUpdateEventHandler(@Payload ContestSubmissionWasTestedEvent event) {
         standingsService.handleUpdateEvent(event);
     }

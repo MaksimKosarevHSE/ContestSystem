@@ -1,8 +1,11 @@
 package com.maksim.submissionAcceptorService.service;
 
 import com.maksim.submissionAcceptorService.dto.*;
-import com.maksim.submissionAcceptorService.entity.Status;
+import com.maksim.submissionAcceptorService.enums.Status;
 import com.maksim.submissionAcceptorService.entity.Submission;
+import com.maksim.submissionAcceptorService.event.SolutionJudgedEvent;
+import com.maksim.submissionAcceptorService.event.SolutionSubmittedEvent;
+import com.maksim.submissionAcceptorService.event.StandingsUpdateEvent;
 import com.maksim.submissionAcceptorService.repository.SubmissionRepository;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -49,7 +52,7 @@ public class SubmissionService {
         this.restTemplate = rest;
     }
 
-    public void validateContestSubmission(ProblemConstraintsDto constraints, LocalDateTime submissionTime) {
+    public void validateContestSubmission(ProblemConstraintsResponseDto constraints, LocalDateTime submissionTime) {
         if (submissionTime.isBefore(constraints.getContestStartTime()))
             throw new RuntimeException("The contest has not started");
         if (submissionTime.isAfter(constraints.getContestEndTime()))
@@ -57,9 +60,9 @@ public class SubmissionService {
     }
 
 
-    public long submitSolution(int problemId, Integer contestId, int userId, SubmissionRequestDto solution) throws IOException, ExecutionException, InterruptedException {
+    public long submitSolution(int problemId, Integer contestId, int userId, CreateSubmissionDto solution) throws IOException, ExecutionException, InterruptedException {
         var submissionTime = LocalDateTime.now();
-        ProblemConstraintsDto problem = getProblemConstraints(problemId, contestId);
+        ProblemConstraintsResponseDto problem = getProblemConstraints(problemId, contestId);
         if (problem == null)
             throw new RuntimeException("No problem found with id " + problemId);
         if (contestId != null) {
@@ -74,28 +77,28 @@ public class SubmissionService {
     }
 
 
-    public Page<GetSubmissionDto> getSuccessPracticeSubmissions(Integer problemId, Integer page) {
+    public Page<SubmissionResponseDto> getSuccessPracticeSubmissions(Integer problemId, Integer page) {
         return submissionRepository.getSubmissionsByProblemIdAndStatus(problemId, null, Status.OK, PageRequest.of(page, PAGE_SIZE));
     }
 
 
-    public Page<GetSubmissionDto> getAllUserPracticeSubmissions(Integer userId, Integer contestId, Integer pageNum) {
+    public Page<SubmissionResponseDto> getAllUserPracticeSubmissions(Integer userId, Integer contestId, Integer pageNum) {
         return submissionRepository.getAllSubmissionsByUserId(userId, contestId, PageRequest.of(pageNum, PAGE_SIZE));
     }
 
 
-    public Page<GetSubmissionDto> getSubmissions(Integer userId, Integer problemId, Integer contestId, Integer pageNum) {
+    public Page<SubmissionResponseDto> getSubmissions(Integer userId, Integer problemId, Integer contestId, Integer pageNum) {
         return submissionRepository.getSubmissionByUserIdAndProblemIdAndContestId(userId, problemId, contestId, PageRequest.of(pageNum, PAGE_SIZE));
     }
 
-    public SubmissionDetailsDto getSubmissionDetails(Long submissionId, int userId) {
+    public SubmissionDetailsResponseDto getSubmissionDetails(Long submissionId, int userId) {
         // TODO проверить есть ли у пользователя права на просмотр
         var submission = submissionRepository.findById(submissionId).orElseThrow(() -> new RuntimeException("No submission found with id " + submissionId));
-        return new ObjectMapper().convertValue(submission, SubmissionDetailsDto.class);
+        return new ObjectMapper().convertValue(submission, SubmissionDetailsResponseDto.class);
     }
 
 
-    private String extractSource(SubmissionRequestDto solution) throws IOException {
+    private String extractSource(CreateSubmissionDto solution) throws IOException {
         boolean hasSourceFile = solution.getSourceFile() != null;
         boolean hasSourceCode = solution.getSourceCode() != null && !solution.getSourceCode().isBlank();
         if (!hasSourceFile && !hasSourceCode)
@@ -107,13 +110,13 @@ public class SubmissionService {
     }
 
 
-    private ProblemConstraintsDto getProblemConstraints(int problemId, Integer contestId) {
+    private ProblemConstraintsResponseDto getProblemConstraints(int problemId, Integer contestId) {
         String address = MessageFormat.format("{0}/problem/{1}/constraints", PROBLEM_SERVICE_URL, problemId);
         if (contestId != null)
             address = MessageFormat.format("{0}/contest/{1}/problem/{2}/constraints", PROBLEM_SERVICE_URL, contestId, problemId);
 
-        ResponseEntity<ProblemConstraintsDto> response = restTemplate.getForEntity(address,
-                ProblemConstraintsDto.class, problemId);
+        ResponseEntity<ProblemConstraintsResponseDto> response = restTemplate.getForEntity(address,
+                ProblemConstraintsResponseDto.class, problemId);
         if (response.getStatusCode() == HttpStatus.OK) {
             return response.getBody();
         }
@@ -121,7 +124,7 @@ public class SubmissionService {
     }
 
 
-    public void sendSubmissionEvent(Submission s, ProblemConstraintsDto p, Integer contestId) throws ExecutionException, InterruptedException {
+    public void sendSubmissionEvent(Submission s, ProblemConstraintsResponseDto p, Integer contestId) throws ExecutionException, InterruptedException {
         var event = new SolutionSubmittedEvent(
                 s.getProblemId(),
                 contestId,

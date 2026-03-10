@@ -1,6 +1,6 @@
 package com.maksim.submissionAcceptorService.controller;
 
-import com.maksim.submissionAcceptorService.dto.SubmissionRequestDto;
+import com.maksim.submissionAcceptorService.dto.CreateSubmissionDto;
 import com.maksim.submissionAcceptorService.service.SubmissionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -19,7 +19,7 @@ public class ContestSubmissionController {
     }
 
     @PostMapping("/contest/{contestId}/problem/{problemId}/submit")
-    public ResponseEntity<Object> submitSolution(@PathVariable Integer contestId, @PathVariable Integer problemId, @ModelAttribute SubmissionRequestDto solution) throws IOException, ExecutionException, InterruptedException {
+    public ResponseEntity<Object> submitSolution(@PathVariable Integer contestId, @PathVariable Integer problemId, @ModelAttribute CreateSubmissionDto solution) throws IOException, ExecutionException, InterruptedException {
         int userId = 1;
         long id = submissionService.submitSolution(problemId, contestId, userId, solution);
         return ResponseEntity.ok(id);

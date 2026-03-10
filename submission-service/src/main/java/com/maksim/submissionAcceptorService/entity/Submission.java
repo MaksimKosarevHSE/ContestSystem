@@ -1,8 +1,9 @@
 package com.maksim.submissionAcceptorService.entity;
 
+import com.maksim.submissionAcceptorService.enums.ProgrammingLanguage;
+import com.maksim.submissionAcceptorService.enums.Status;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

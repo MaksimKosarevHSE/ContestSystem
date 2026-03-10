@@ -1,6 +1,6 @@
 package com.maksim.submissionAcceptorService.dto;
 
-import com.maksim.submissionAcceptorService.entity.ProgrammingLanguage;
+import com.maksim.submissionAcceptorService.enums.ProgrammingLanguage;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,7 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class SubmissionRequestDto {
+public class CreateSubmissionDto {
     private String sourceCode;
     private MultipartFile sourceFile;
     @NotNull

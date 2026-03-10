@@ -1,6 +1,6 @@
 package com.maksim.submissionAcceptorService.config;
 
-import com.maksim.submissionAcceptorService.dto.SolutionJudgedEvent;
+import com.maksim.submissionAcceptorService.event.SolutionJudgedEvent;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.IntegerDeserializer;
@@ -20,8 +20,13 @@ import java.util.Map;
 public class KafkaConfig {
     @Value("${solution.submitted.event.topic}")
     private String SOL_SUB_TOP;
+
+    @Value("${standings.update.event.topic=standings-update-event-topic}")
+    private String STANDINGS_UPDATE_TOPIC;
+
     @Value("${consumer.group_id}")
     private String GROUP_ID;
+
     @Value("${spring.kafka.bootstrap-servers}")
     private String KAFKA_BOOTSTRAP;
 
@@ -45,10 +50,17 @@ public class KafkaConfig {
     }
 
     @Bean
-    NewTopic createTopic(){
+    NewTopic createTopic1(){
         return TopicBuilder.name(SOL_SUB_TOP)
                         .partitions(3)
                         .build();
+    }
 
+
+    @Bean
+    NewTopic createTopic2(){
+        return TopicBuilder.name(STANDINGS_UPDATE_TOPIC)
+                .partitions(3)
+                .build();
     }
 }

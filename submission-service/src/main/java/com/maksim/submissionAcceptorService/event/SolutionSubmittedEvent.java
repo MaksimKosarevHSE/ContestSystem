@@ -1,6 +1,6 @@
-package com.maksim.submissionAcceptorService.service;
+package com.maksim.submissionAcceptorService.event;
 
-import com.maksim.submissionAcceptorService.entity.ProgrammingLanguage;
+import com.maksim.submissionAcceptorService.enums.ProgrammingLanguage;
 import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
