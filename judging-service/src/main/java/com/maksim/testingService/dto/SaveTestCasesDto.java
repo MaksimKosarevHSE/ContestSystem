@@ -1,6 +1,6 @@
-package com.maksim.testingService.DTO;
+package com.maksim.testingService.dto;
 
-import com.maksim.testingService.entity.CheckerType;
+import com.maksim.testingService.enums.CheckerType;
 import com.maksim.testingService.enums.ProgrammingLanguage;
 import lombok.*;
 
@@ -11,7 +11,7 @@ import java.util.List;
 @Getter
 @Setter
 @ToString
-public class SaveTestsDto {
+public class SaveTestCasesDto {
     private int problemId;
     private List<byte[]> testFilesContent;
     private List<String> testFilesNames;

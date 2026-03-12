@@ -21,7 +21,6 @@ public class ProcessedEvent {
     @Column
     private int userId;
 
-
     public ProcessedEvent(String messageId, int userId) {
         this.messageId = messageId;
         this.userId = userId;

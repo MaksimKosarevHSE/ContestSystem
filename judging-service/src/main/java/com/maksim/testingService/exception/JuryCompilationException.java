@@ -1,4 +1,4 @@
-package com.maksim.testingService.exceptions;
+package com.maksim.testingService.exception;
 
 
 public class JuryCompilationException extends RuntimeException{

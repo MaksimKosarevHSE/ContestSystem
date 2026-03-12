@@ -1,11 +1,9 @@
-package com.maksim.testingService.handler;
+package com.maksim.testingService.event;
 
 import com.maksim.testingService.entity.ProcessedEvent;
-import com.maksim.testingService.event.SolutionSubmittedEvent;
+import com.maksim.testingService.service.JudgingSystemService;
 import com.maksim.testingService.respository.ProcessedEventRepository;
 import jakarta.transaction.Transactional;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
@@ -13,16 +11,15 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.concurrent.ExecutionException;
 
 @Component
-public class SolutionSubmittedEventHandler {
+public class EventListener {
 
-    private TestSystem testSystem;
+    private JudgingSystemService testSystem;
     private ProcessedEventRepository processedEventRepository;
 
-    SolutionSubmittedEventHandler(TestSystem testSystem, ProcessedEventRepository processedEventRepository){
+    EventListener(JudgingSystemService testSystem, ProcessedEventRepository processedEventRepository){
         this.testSystem = testSystem;
         this.processedEventRepository = processedEventRepository;
     }

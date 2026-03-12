@@ -1,25 +1,21 @@
-package com.maksim.testingService.handler;
+package com.maksim.testingService.service;
 
-import com.maksim.testingService.DTO.VerdictInfo;
-import com.maksim.testingService.entity.CheckerType;
-import com.maksim.testingService.entity.TestsMetadata;
+import com.maksim.testingService.enums.CheckerType;
 import com.maksim.testingService.event.JudgingProgress;
 import com.maksim.testingService.enums.ProgrammingLanguage;
 import com.maksim.testingService.enums.Status;
 import com.maksim.testingService.event.SolutionJudgedEvent;
 import com.maksim.testingService.event.SolutionSubmittedEvent;
-import com.maksim.testingService.exceptions.*;
+import com.maksim.testingService.exception.*;
+import com.maksim.testingService.service.model.TestCasesMetadata;
+import com.maksim.testingService.service.model.VerdictInfo;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.message.SimpleMessage;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.messaging.simp.SimpMessageType;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
@@ -43,7 +39,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Getter
 @Setter
-public class TestSystem {
+public class JudgingSystemService {
     private final String PATH_TO_TESTS = "/judge/tests";
     private final String PATH_TO_SESSION_STORE = "/judge/sessions";
     private final String SOURCE_FILE_NAME = "main";
@@ -61,7 +57,7 @@ public class TestSystem {
     private ReactiveRedisTemplate<String, JudgingProgress> redisTemplate;
     private KafkaTemplate<Integer, SolutionJudgedEvent> kafkaTemplate;
 
-    public TestSystem(@Qualifier("asRedis") ReactiveRedisTemplate<String, JudgingProgress> redisTemplate, SimpMessagingTemplate tmp, KafkaTemplate<Integer, SolutionJudgedEvent> kafkaTemplate) {
+    public JudgingSystemService(@Qualifier("asRedis") ReactiveRedisTemplate<String, JudgingProgress> redisTemplate, SimpMessagingTemplate tmp, KafkaTemplate<Integer, SolutionJudgedEvent> kafkaTemplate) {
         this.msgTemplate = tmp;
         this.redisTemplate = redisTemplate;
         this.kafkaTemplate = kafkaTemplate;
@@ -89,7 +85,7 @@ public class TestSystem {
         } catch (InterruptedException | IOException ex) {
             log.error(ex.getMessage());
             throw ex;
-        } catch (BadVerdict ex) {
+        } catch (BadVerdictException ex) {
             log.debug("BadVerdict of submission {}. {}", submissionMeta.getSubmissionId(), ex.getMessage());
         }
 
@@ -103,7 +99,7 @@ public class TestSystem {
 
     private void testSolution(Path compiledFile, Path sessionDir, SolutionSubmittedEvent submissionMeta, VerdictInfo verdictInfo) throws IOException, InterruptedException {
         Path judgeTestDir = Path.of(PATH_TO_TESTS).resolve("problem_" + submissionMeta.getProblemId());
-        TestsMetadata meta = new ObjectMapper().readValue(judgeTestDir.resolve("meta.json"), TestsMetadata.class);
+        TestCasesMetadata meta = new ObjectMapper().readValue(judgeTestDir.resolve("meta.json"), TestCasesMetadata.class);
         int testsCnt = meta.getTestCount();
         Path contestantOutFile = sessionDir.resolve(CONTESTANT_OUT_FILE_NAME);
 //        Path checkerOutFile = sessionDir.resolve(CHECKER_OUT_FILE_NAME);
@@ -140,13 +136,13 @@ public class TestSystem {
                 process.destroyForcibly();
                 verdictInfo.setNumOfFailureTest(i);
                 verdictInfo.setStatus(Status.TIME_LIMIT);
-                throw new BadVerdict("Time limit exceeded");
+                throw new BadVerdictException("Time limit exceeded");
             }
             int exitCode = process.exitValue();
             if (exitCode != 0) {
                 verdictInfo.setNumOfFailureTest(i);
                 verdictInfo.setStatus(Status.RUNTIME_ERROR);
-                throw new BadVerdict("Runtime error");
+                throw new BadVerdictException("Runtime error");
             }
 
             Path answerFile = judgeTestDir.resolve(i + ".out");
@@ -193,7 +189,7 @@ public class TestSystem {
             case 1:
                 verdictInfo.setStatus(Status.WRONG_ANSWER);
                 verdictInfo.setNumOfFailureTest(testNum);
-                throw new BadVerdict(new String(Files.readAllBytes(Path.of(checkerOutFile))));
+                throw new BadVerdictException(new String(Files.readAllBytes(Path.of(checkerOutFile))));
             default:
                 log.debug("Checker RE error");
                 throw new RuntimeException("Checker RE error");
@@ -213,13 +209,13 @@ public class TestSystem {
         if (!successEnd) {
             process.destroyForcibly();
             verdictInfo.setStatus(Status.COMPILE_ERROR);
-            throw new BadVerdict("Compilation time limit");
+            throw new BadVerdictException("Compilation time limit");
         }
         int exitCode = process.exitValue();
         if (exitCode != 0) {
             String out = new String(Files.readAllBytes(outputPath));
             verdictInfo.setStatus(Status.COMPILE_ERROR);
-            throw new BadVerdict(out);
+            throw new BadVerdictException(out);
         }
 
         String sourcePathString = sourcePath.toString();
@@ -246,7 +242,7 @@ public class TestSystem {
                         msg = "The number of lines is less than that of the judge's solution";
                     else
                         msg = "The number of lines is greater that that of the judge's solution";
-                    throw new BadVerdict(msg);
+                    throw new BadVerdictException(msg);
                 }
 
                 line1 = line1.replaceAll("(\\n|\\s)", "");
@@ -255,7 +251,7 @@ public class TestSystem {
                 if (!line1.equals(line2)) {
                     verdictInfo.setNumOfFailureTest(testNum);
                     verdictInfo.setStatus(Status.WRONG_ANSWER);
-                    throw new BadVerdict("The line " + lineCnt + " is different from the judge's solution");
+                    throw new BadVerdictException("The line " + lineCnt + " is different from the judge's solution");
                 }
                 lineCnt++;
             }

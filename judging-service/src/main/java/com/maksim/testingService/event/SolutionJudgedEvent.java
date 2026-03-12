@@ -3,8 +3,6 @@ package com.maksim.testingService.event;
 import com.maksim.testingService.enums.Status;
 import lombok.*;
 
-import java.time.LocalDateTime;
-
 @Data
 @Builder
 public class SolutionJudgedEvent {

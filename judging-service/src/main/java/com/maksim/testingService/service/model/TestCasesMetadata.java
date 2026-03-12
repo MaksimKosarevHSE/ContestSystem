@@ -1,6 +1,7 @@
-package com.maksim.testingService.entity;
+package com.maksim.testingService.service.model;
 
 
+import com.maksim.testingService.enums.CheckerType;
 import com.maksim.testingService.enums.ProgrammingLanguage;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,7 +12,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class TestsMetadata {
+public class TestCasesMetadata {
     private int problemId;
     private int testCount;
     private CheckerType checkerType;

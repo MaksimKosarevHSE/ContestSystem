@@ -1,10 +1,10 @@
 package com.maksim.testingService.service;
 
 
-import com.maksim.testingService.DTO.SaveTestsDto;
-import com.maksim.testingService.entity.CheckerType;
-import com.maksim.testingService.entity.TestsMetadata;
-import com.maksim.testingService.exceptions.JuryCompilationException;
+import com.maksim.testingService.dto.SaveTestCasesDto;
+import com.maksim.testingService.enums.CheckerType;
+import com.maksim.testingService.exception.JuryCompilationException;
+import com.maksim.testingService.service.model.TestCasesMetadata;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
@@ -12,16 +12,15 @@ import tools.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
-public class TestService {
+public class JudgingService {
     private final String TEST_DIR_PATH = "/judge/tests";
     private final int JURY_COMPILATION_TIME_LIMIT = 10;
 
-    public void saveTests(SaveTestsDto dto) throws IOException, InterruptedException, JuryCompilationException {
+    public void saveTests(SaveTestCasesDto dto) throws IOException, InterruptedException, JuryCompilationException {
         Path problemDir = Path.of(TEST_DIR_PATH).resolve(Path.of("problem_" + dto.getProblemId()));
         try {
             System.out.println(Files.createDirectories(problemDir).toAbsolutePath());
@@ -30,7 +29,7 @@ public class TestService {
                 Path filePath = Files.createFile(problemDir.resolve(dto.getTestFilesNames().get(i)));
                 Files.write(filePath, dto.getTestFilesContent().get(i));
             }
-            var metaData = new TestsMetadata(dto.getProblemId(), dto.getCountOfTestCases(), dto.getCheckerType(), dto.getCheckerLanguage(), null );
+            var metaData = new TestCasesMetadata(dto.getProblemId(), dto.getCountOfTestCases(), dto.getCheckerType(), dto.getCheckerLanguage(), null );
 
             if (dto.getCheckerType() == CheckerType.CUSTOM_CHECKER) {
                 Path checkerFile = Files.createFile(problemDir.resolve("checker" + dto.getCheckerLanguage().sourceSuffix));

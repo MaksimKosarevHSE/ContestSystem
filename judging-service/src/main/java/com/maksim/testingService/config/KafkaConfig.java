@@ -23,13 +23,10 @@ import java.util.Map;
 @EnableKafka
 public class KafkaConfig {
     @Value("${spring.kafka.bootstrap-servers}")
-    String bootstrapServers;
+    String kafkaBootstrap;
 
     @Value("${consumer.group_id}")
     String groupId;
-
-    @Value("${spring.kafka.consumer.properties.spring.json.trusted.packages}")
-    String trustedPackages;
 
     @Value("${solution.judged.event.topic}")
     String solutionJudgedTopic;
@@ -37,9 +34,9 @@ public class KafkaConfig {
     @Bean
     ConsumerFactory<Integer, SolutionSubmittedEvent> consumerFactory(){
         Map<String, Object> props = new HashMap<>();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBootstrap);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
-        props.put(JacksonJsonDeserializer.TRUSTED_PACKAGES, trustedPackages);
+        props.put(JacksonJsonDeserializer.TRUSTED_PACKAGES, "*");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, IntegerDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JacksonJsonDeserializer.class);
         props.put(JacksonJsonDeserializer.USE_TYPE_INFO_HEADERS, false);
@@ -58,6 +55,5 @@ public class KafkaConfig {
         return TopicBuilder.name(solutionJudgedTopic)
                 .partitions(3)
                 .build();
-
     }
 }
