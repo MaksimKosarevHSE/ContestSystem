@@ -26,7 +26,6 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 @Service
-@Transactional
 @Slf4j
 @RequiredArgsConstructor
 public class SubmissionService {
@@ -37,19 +36,20 @@ public class SubmissionService {
     @Value("${standings.update.event.topic}")
     private String standingsUpdateTopicName;
 
-    private KafkaTemplate<String, Object> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    private SubmissionRepository submissionRepository;
+    private final SubmissionRepository submissionRepository;
 
-    private AuthServiceClient authServiceClient;
+    private final AuthServiceClient authServiceClient;
 
-    private ProblemServiceClient problemServiceClient;
+    private final ProblemServiceClient problemServiceClient;
 
-    private SubmissionMapper submissionMapper;
+    private final SubmissionMapper submissionMapper;
 
     private static int PAGE_SIZE = 16;
 
 
+    @Transactional
     public long submitSolution(int problemId, Integer contestId, int userId, CreateSubmissionDto solution) throws IOException, ExecutionException, InterruptedException {
         var submissionTime = LocalDateTime.now();
         ProblemConstraintsResponseDto constraints = problemServiceClient.getProblemConstraints(problemId, contestId);
@@ -103,7 +103,11 @@ public class SubmissionService {
     @Transactional
     public void processJudgedSolution(SolutionJudgedEvent ev) {
         Submission submission = submissionRepository.findById(ev.getSubmissionId()).
-                orElseThrow(() -> new ResourceNotFoundException("Can't process event")); // добавить анретраебл экспешпн
+                orElseThrow(() -> new ResourceNotFoundException("Can't process event"));
+
+        if (ev.getStatus() == submission.getStatus()){
+            return; // идемпотентность
+        }
 
         submission.setStatus(ev.getStatus());
         submission.setExecutionTime(ev.getExecutionTime());
@@ -119,6 +123,7 @@ public class SubmissionService {
     }
 
 
+    // без транзакции
     public SubmissionDetailsResponseDto getSubmissionDetails(Long submissionId, Integer contestId, Integer userId) {
         var submission = submissionRepository.findByIdAndContestId(submissionId, contestId)
                 .orElseThrow(() -> new ResourceNotFoundException("No submission found"));
@@ -130,6 +135,8 @@ public class SubmissionService {
     }
 
 
+
+    // без транзакции
     public Page<SubmissionResponseDto> getSubmissions(Integer contestId, Integer problemId, Integer userId, Status status, ProgrammingLanguage language, Integer page) {
         return submissionRepository.findFiltered(contestId, problemId, userId, status, language, PageRequest.of(page - 1, PAGE_SIZE))
                 .map(submissionMapper::toSubmissionResponseDto);
