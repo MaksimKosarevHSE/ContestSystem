@@ -31,6 +31,6 @@ public class Contest {
     private List<ContestProblem> problems;
 
     public List<Problem> getProblems(){
-        return problems.stream().map(el -> el.getProblem()).toList();
+        return problems.stream().map(ContestProblem::getProblem).toList();
     }
 }
