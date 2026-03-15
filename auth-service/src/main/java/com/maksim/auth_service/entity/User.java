@@ -14,13 +14,13 @@ import lombok.NoArgsConstructor;
 @Builder
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "handle", unique = true)
+    @Column(name = "handle")
     private String handle;
 
-    @Column(name = "email", unique = true)
+    @Column(name = "email")
     private String email;
 
     @Column(name = "password_hash")

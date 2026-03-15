@@ -12,18 +12,14 @@ import lombok.Setter;
 @Table(name = "processed_events")
 public class ProcessedEvent {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "message_id")
     private String messageId;
 
-    @Column
-    private int userId;
-
-    public ProcessedEvent(String messageId, int userId) {
+    public ProcessedEvent(String messageId) {
         this.messageId = messageId;
-        this.userId = userId;
     }
 
 }

@@ -31,12 +31,10 @@ public class EventListener {
     @KafkaListener(topics = "solution-submitted-event-topic", containerFactory = "factory1", concurrency = "2")
     public void handle(@Payload SolutionSubmittedEvent solutionEvent,
                        @Header("event-id") String msgId) throws IOException, InterruptedException, ExecutionException {
-
         ProcessedEvent ev = processedEventRepository.findByMessageId(msgId);
         if (ev != null) return;
-        log.debug("adsfsdfsafsfasfadfafdasfasfasd");
         testSystem.processSubmission(solutionEvent);
-        processedEventRepository.save(new ProcessedEvent(msgId, solutionEvent.getUserId()));
+        processedEventRepository.save(new ProcessedEvent(msgId));
     }
 
 }
