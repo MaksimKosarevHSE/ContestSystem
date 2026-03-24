@@ -1,4 +1,4 @@
-package com.maksim.problemService.repository;
+package com.maksim.problemService.repository.associative;
 
 import com.maksim.problemService.entity.associative.ContestUserTask;
 import com.maksim.problemService.entity.keys.ContestUserTaskId;

@@ -5,10 +5,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 @Builder
-@Schema(description = "Полное описание задачи")
+@Schema(description = "Сигнатура задачи")
 public record ProblemSignatureResponseDto(
         Integer id,
         String title,
-        int complexity
+        Integer complexity
 ) {
 }

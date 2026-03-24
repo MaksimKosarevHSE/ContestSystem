@@ -40,11 +40,11 @@ public class Problem {
     @Column(name = "complexity")
     private Integer complexity;
     @Column(name = "compile_time_limit")
-    private Double compileTimeLimit;
+    private Integer compileTimeLimit;
     @Column(name = "time_limit")
-    private Double timeLimit;
+    private Integer timeLimit;
     @Column(name = "memory_limit")
-    private Double memoryLimit;
+    private Integer memoryLimit;
 
     public Problem(int creatorId, String title, boolean isPublic,
                    String statement, String input,

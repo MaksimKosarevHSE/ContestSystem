@@ -1,0 +1,21 @@
+package com.maksim.problemService.repository.associative;
+
+import com.maksim.problemService.entity.associative.ContestProblem;
+import com.maksim.problemService.entity.keys.ContestProblemId;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+import java.util.Optional;
+
+public interface ContestProblemRepository extends JpaRepository<ContestProblem, ContestProblemId> {
+
+    Optional<ContestProblem> findByContestIdAndProblemId(Integer contestId, Integer problemId);
+
+    Optional<ContestProblem> findByProblemId(Integer problemId);
+
+    List<ContestProblem> findByContestId(Integer contestId);
+
+    void deleteByContestId(int contestId);
+
+    boolean existsByProblemId(int problemId);
+}
