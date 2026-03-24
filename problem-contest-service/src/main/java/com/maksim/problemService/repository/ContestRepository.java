@@ -4,7 +4,7 @@
     import com.maksim.problemService.dto.contest.ContestSignatureResponseDto;
     import com.maksim.problemService.entity.Contest;
     import com.maksim.problemService.entity.Problem;
-    import com.maksim.problemService.entity.ProblemConstraints;
+    import com.maksim.problemService.dto.problem.ProblemConstraints;
     import org.springframework.data.domain.Page;
     import org.springframework.data.domain.Pageable;
     import org.springframework.data.jpa.repository.JpaRepository;

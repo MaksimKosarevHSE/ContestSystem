@@ -1,7 +1,7 @@
 package com.maksim.submissionAcceptorService.kafka;
 
 import com.maksim.submissionAcceptorService.enums.Status;
-import com.maksim.submissionAcceptorService.event.SubmissionJudgingProgressEvent;
+import com.maksim.submissionAcceptorService.kafka.event.SubmissionJudgingProgressEvent;
 import com.maksim.submissionAcceptorService.service.JudgingProgressCacheService;
 import com.maksim.submissionAcceptorService.service.JudgingProgressNotificationService;
 import com.maksim.submissionAcceptorService.service.SubmissionService;
@@ -15,8 +15,11 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class JudgedSolutionConsumer {
+
     private final SubmissionService submissionService;
+
     private final JudgingProgressCacheService judgingProgressCacheService;
+
     private final JudgingProgressNotificationService judgingProgressNotificationService;
 
     @KafkaListener(topics = "submission-jugding-progress-event-topic", containerFactory = "factory1")

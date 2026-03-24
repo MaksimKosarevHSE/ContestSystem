@@ -1,4 +1,4 @@
-package com.maksim.problemService.entity;
+package com.maksim.problemService.dto.problem;
 
 import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;

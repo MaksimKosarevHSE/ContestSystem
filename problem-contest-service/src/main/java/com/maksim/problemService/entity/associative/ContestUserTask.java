@@ -37,9 +37,6 @@ public class ContestUserTask {
 
     private LocalDateTime solutionTime;
 
-    @Version
-    private Integer version;
-
     public ContestUserTask(ContestUserTaskId id) {
         this.id = id;
     }

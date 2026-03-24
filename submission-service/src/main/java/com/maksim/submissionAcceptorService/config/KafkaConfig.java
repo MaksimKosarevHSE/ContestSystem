@@ -1,6 +1,6 @@
 package com.maksim.submissionAcceptorService.config;
 
-import com.maksim.submissionAcceptorService.event.SubmissionJudgingProgressEvent;
+import com.maksim.submissionAcceptorService.kafka.event.SubmissionJudgingProgressEvent;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.IntegerDeserializer;

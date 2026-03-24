@@ -5,33 +5,23 @@ import com.maksim.submissionAcceptorService.dto.mapper.SubmissionMapper;
 import com.maksim.submissionAcceptorService.enums.ProgrammingLanguage;
 import com.maksim.submissionAcceptorService.enums.Status;
 import com.maksim.submissionAcceptorService.entity.Submission;
-import com.maksim.submissionAcceptorService.event.SolutionSubmittedEvent;
-import com.maksim.submissionAcceptorService.event.StandingsUpdateEvent;
-import com.maksim.submissionAcceptorService.event.SubmissionJudgingProgressEvent;
+import com.maksim.submissionAcceptorService.kafka.event.SolutionSubmittedEvent;
+import com.maksim.submissionAcceptorService.kafka.event.SubmissionJudgingProgressEvent;
 import com.maksim.submissionAcceptorService.exception.ResourceNotFoundException;
 import com.maksim.submissionAcceptorService.exception.UnauthorizedAccessException;
 import com.maksim.submissionAcceptorService.exception.ValidationException;
-import com.maksim.submissionAcceptorService.kafka.KafkaEventPublisher;
 import com.maksim.submissionAcceptorService.repository.SubmissionRepository;
 import com.maksim.submissionAcceptorService.service.outbox.OutboxEventService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 @Service
 @Slf4j

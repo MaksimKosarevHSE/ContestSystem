@@ -4,7 +4,7 @@ import com.maksim.problemService.dto.contest.ContestSignatureResponseDto;
 import com.maksim.problemService.dto.contest.CreateContestDto;
 import com.maksim.problemService.dto.problem.ProblemSignatureResponseDto;
 import com.maksim.problemService.entity.Problem;
-import com.maksim.problemService.entity.ProblemConstraints;
+import com.maksim.problemService.dto.problem.ProblemConstraints;
 import com.maksim.problemService.exception.ErrorResponse;
 import com.maksim.problemService.service.ContestService;
 import io.swagger.v3.oas.annotations.Operation;

@@ -7,7 +7,7 @@ import com.maksim.problemService.dto.problem.ProblemSignatureResponseDto;
 import com.maksim.problemService.dto.problem.SendTestCasesToJudgeServiceDto;
 import com.maksim.problemService.exception.ResourceNotFoundException;
 import com.maksim.problemService.validators.ProblemValidator;
-import com.maksim.problemService.entity.ProblemConstraints;
+import com.maksim.problemService.dto.problem.ProblemConstraints;
 import com.maksim.problemService.entity.Problem;
 import com.maksim.problemService.repository.ProblemRepository;
 import jakarta.transaction.Transactional;

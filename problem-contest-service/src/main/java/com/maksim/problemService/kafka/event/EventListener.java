@@ -1,16 +1,14 @@
-package com.maksim.problemService.event;
+package com.maksim.problemService.kafka.event;
 
 import com.maksim.problemService.entity.ProcessedEvent;
 import com.maksim.problemService.repository.ProcessedEventRepository;
 import com.maksim.problemService.service.StandingsService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 

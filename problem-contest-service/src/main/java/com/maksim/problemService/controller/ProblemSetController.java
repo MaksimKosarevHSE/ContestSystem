@@ -4,7 +4,7 @@ package com.maksim.problemService.controller;
 import com.maksim.problemService.dto.problem.ProblemCreateDto;
 import com.maksim.problemService.dto.problem.ProblemSignatureResponseDto;
 import com.maksim.problemService.entity.Problem;
-import com.maksim.problemService.entity.ProblemConstraints;
+import com.maksim.problemService.dto.problem.ProblemConstraints;
 import com.maksim.problemService.exception.ErrorResponse;
 import com.maksim.problemService.service.ProblemService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,8 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.io.IOException;
 
 @RestController
 @CrossOrigin

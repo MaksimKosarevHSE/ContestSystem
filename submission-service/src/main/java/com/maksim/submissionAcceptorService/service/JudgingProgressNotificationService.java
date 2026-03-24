@@ -1,6 +1,6 @@
 package com.maksim.submissionAcceptorService.service;
 
-import com.maksim.submissionAcceptorService.event.SubmissionJudgingProgressEvent;
+import com.maksim.submissionAcceptorService.kafka.event.SubmissionJudgingProgressEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Async;

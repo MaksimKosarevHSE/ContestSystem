@@ -4,6 +4,7 @@ import com.maksim.problemService.dto.contest.ContestSignatureResponseDto;
 import com.maksim.problemService.dto.contest.CreateContestDto;
 import com.maksim.problemService.dto.mapper.ContestMapper;
 import com.maksim.problemService.dto.mapper.ProblemMapper;
+import com.maksim.problemService.dto.problem.ProblemConstraints;
 import com.maksim.problemService.dto.problem.ProblemSignatureResponseDto;
 import com.maksim.problemService.entity.*;
 import com.maksim.problemService.entity.associative.ContestProblem;

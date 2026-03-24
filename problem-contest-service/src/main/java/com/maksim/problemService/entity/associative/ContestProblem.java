@@ -23,8 +23,5 @@ public class ContestProblem {
     @JoinColumn(name = "problem_id")
     private Problem problem;
 
-    @Version
-    private Integer version;
-
     private int score; // баллов за задачу
 }

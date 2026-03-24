@@ -8,22 +8,16 @@ import com.maksim.problemService.entity.associative.ContestUserTask;
 import com.maksim.problemService.enums.Status;
 import com.maksim.problemService.entity.keys.ContestUserId;
 import com.maksim.problemService.entity.keys.ContestUserTaskId;
-import com.maksim.problemService.event.StandingsUpdateEvent;
+import com.maksim.problemService.kafka.event.StandingsUpdateEvent;
 import com.maksim.problemService.exception.ResourceNotFoundException;
 import com.maksim.problemService.repository.ContestRepository;
 import com.maksim.problemService.repository.ContestUserRepository;
 import com.maksim.problemService.repository.ContestUserTaskRepository;
 import com.maksim.problemService.repository.ProblemRepository;
-import jakarta.persistence.OptimisticLockException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.ZSetOperations;
-import org.springframework.kafka.annotation.BackOff;
-import org.springframework.resilience.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tools.jackson.databind.ObjectMapper;
 
 import java.time.Duration;
 import java.util.*;
@@ -130,8 +124,6 @@ public class StandingsService {
                 for (Map.Entry<Integer, TaskProgressResponseDto> entry : taskMap.entrySet()) {
                     cacheService.putUserTaskDetail(contestId, userId, entry.getKey(), entry.getValue());
                 }
-
-
             }
 
             List<TaskProgressResponseDto> tasks = new ArrayList<>(taskMap.values());
