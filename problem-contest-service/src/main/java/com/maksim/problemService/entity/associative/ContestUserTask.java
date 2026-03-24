@@ -1,5 +1,7 @@
-package com.maksim.problemService.entity;
+package com.maksim.problemService.entity.associative;
 
+import com.maksim.problemService.entity.Contest;
+import com.maksim.problemService.entity.Problem;
 import com.maksim.problemService.entity.keys.ContestUserTaskId;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -34,6 +36,9 @@ public class ContestUserTask {
     private int score;
 
     private LocalDateTime solutionTime;
+
+    @Version
+    private Integer version;
 
     public ContestUserTask(ContestUserTaskId id) {
         this.id = id;
