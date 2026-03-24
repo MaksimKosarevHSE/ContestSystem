@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -23,14 +24,12 @@ import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 @Controller
+@RequiredArgsConstructor
 @RequestMapping("/api/sub")
 @Tag(name = "Contest Submissions", description = "Managing submissions within the contests")
 public class ContestSubmissionController {
-    private final SubmissionService submissionService;
 
-    ContestSubmissionController(SubmissionService submitSolutionService) {
-        this.submissionService = submitSolutionService;
-    }
+    private final SubmissionService submissionService;
 
     @PostMapping("/contest/{contestId}/problem/{problemId}")
     @Operation(summary = "Submit solution on problem from contest")

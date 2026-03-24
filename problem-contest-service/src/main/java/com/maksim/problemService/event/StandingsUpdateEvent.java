@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
-public class ContestSubmissionWasTestedEvent {
+public class StandingsUpdateEvent {
     private Integer userId;
     private Integer contestId;
     private Integer problemId;

@@ -8,7 +8,7 @@ import com.maksim.problemService.entity.ContestUserTask;
 import com.maksim.problemService.enums.Status;
 import com.maksim.problemService.entity.keys.ContestUserId;
 import com.maksim.problemService.entity.keys.ContestUserTaskId;
-import com.maksim.problemService.event.ContestSubmissionWasTestedEvent;
+import com.maksim.problemService.event.StandingsUpdateEvent;
 import com.maksim.problemService.exception.ResourceNotFoundException;
 import com.maksim.problemService.repository.ContestRepository;
 import com.maksim.problemService.repository.ContestUserRepository;
@@ -84,7 +84,7 @@ public class StandingsService {
 
 
     @Transactional
-    public void handleUpdateEvent(ContestSubmissionWasTestedEvent event) {
+    public void handleUpdateEvent(StandingsUpdateEvent event) {
         int userId = event.getUserId();
         int contestId = event.getContestId();
         int taskId = event.getProblemId();

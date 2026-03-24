@@ -5,11 +5,15 @@ import com.maksim.submissionAcceptorService.dto.mapper.SubmissionMapper;
 import com.maksim.submissionAcceptorService.enums.ProgrammingLanguage;
 import com.maksim.submissionAcceptorService.enums.Status;
 import com.maksim.submissionAcceptorService.entity.Submission;
+import com.maksim.submissionAcceptorService.event.SolutionSubmittedEvent;
+import com.maksim.submissionAcceptorService.event.StandingsUpdateEvent;
 import com.maksim.submissionAcceptorService.event.SubmissionJudgingProgressEvent;
 import com.maksim.submissionAcceptorService.exception.ResourceNotFoundException;
 import com.maksim.submissionAcceptorService.exception.UnauthorizedAccessException;
 import com.maksim.submissionAcceptorService.exception.ValidationException;
+import com.maksim.submissionAcceptorService.kafka.KafkaEventPublisher;
 import com.maksim.submissionAcceptorService.repository.SubmissionRepository;
+import com.maksim.submissionAcceptorService.service.outbox.OutboxEventService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -40,38 +44,28 @@ public class SubmissionService {
     @Value("${standings.update.event.topic}")
     private String standingsUpdateTopicName;
 
-    private final KafkaTemplate<String, Object> kafkaTemplate;
-
     private final SubmissionRepository submissionRepository;
-
-    private final AuthServiceClient authServiceClient;
 
     private final ProblemServiceClient problemServiceClient;
 
     private final JudgingProgressCacheService submissionProgressCacheService;
 
-    private final JudgingProgressNotificationService judgingProgressNotificationService;
-
     private final SubmissionMapper submissionMapper;
+
+    private final OutboxEventService outboxEventService;
 
     private static final int PAGE_SIZE = 16;
 
-    private static final int KAFKA_TIMEOUT = 5;
-
-    @Transactional("transactionManager")
+    @Transactional
     public long submitSolution(int problemId, Integer contestId, int userId, CreateSubmissionDto solution) {
         try {
-            var submissionTime = LocalDateTime.now();
+            LocalDateTime submissionTime = LocalDateTime.now();
             ProblemConstraintsResponseDto constraints = problemServiceClient.getProblemConstraints(problemId, contestId);
-
             boolean isUpsolving = false;
             if (contestId != null) {
-                if (submissionTime.isBefore(constraints.getContestStartTime())){
-                    System.out.println(submissionTime);
-                    System.out.println(constraints.getContestStartTime());
+                if (submissionTime.isBefore(constraints.getContestStartTime())) {
                     throw new RuntimeException("The contest has not started");
                 }
-
                 if (submissionTime.isAfter(constraints.getContestEndTime()))
                     isUpsolving = true;
             }
@@ -88,8 +82,17 @@ public class SubmissionService {
                     .isUpsolving(isUpsolving).build();
 
             submission = submissionRepository.save(submission);
-            sendSubmissionEvent(submission, constraints, contestId);
+
+            SolutionSubmittedEvent event = submissionMapper.toSolutionSubmittedEvent(submission);
+            event.setCompilationTimeLimit(constraints.getCompileTimeLimit());
+            event.setTimeLimit(constraints.getTimeLimit());
+            event.setMemoryLimit(constraints.getMemoryLimit());
+            event.setContestId(contestId);
+
+            outboxEventService.save(solutionSubmittedTopicName, event);
+
             return submission.getId();
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -106,22 +109,8 @@ public class SubmissionService {
         return solution.getSourceCode();
     }
 
-    private void sendSubmissionEvent(Submission s, ProblemConstraintsResponseDto p, Integer contestId) {
-        try {
-            var event = submissionMapper.toSolutionSubmittedEvent(s);
-            event.setCompilationTimeLimit(p.getCompileTimeLimit());
-            event.setTimeLimit(p.getTimeLimit());
-            event.setMemoryLimit(p.getMemoryLimit());
-            event.setContestId(contestId);
-            var record = new ProducerRecord<>(solutionSubmittedTopicName, UUID.randomUUID().toString(), (Object) event);
-            record.headers().add("event-id", UUID.randomUUID().toString().getBytes());
-            kafkaTemplate.send(record).get(KAFKA_TIMEOUT, TimeUnit.SECONDS);
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
-    @Transactional("transactionManager")
+    @Transactional
     public void processJudgedSolution(SubmissionJudgingProgressEvent ev) {
         Submission submission = submissionRepository.findById(ev.getSubmissionId()).
                 orElseThrow(() -> new ResourceNotFoundException("Can't process event"));
@@ -137,13 +126,10 @@ public class SubmissionService {
         submission.setCheckerMessage(ev.getCheckerMessage());
 
         submissionRepository.save(submission);
+
         if (submission.getContestId() != null && !submission.getIsUpsolving()) {
             var event = submissionMapper.toStandingsUpdateEvent(submission);
-            try {
-                kafkaTemplate.send(standingsUpdateTopicName, event).get(KAFKA_TIMEOUT, TimeUnit.SECONDS);
-            } catch (InterruptedException | ExecutionException | TimeoutException e) {
-                throw new RuntimeException(e);
-            }
+            outboxEventService.save(standingsUpdateTopicName, event);
         }
     }
 

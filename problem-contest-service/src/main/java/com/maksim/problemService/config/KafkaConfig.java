@@ -1,9 +1,7 @@
 package com.maksim.problemService.config;
 
-import com.maksim.problemService.dto.problem.SendTestCasesToJudgeServiceDto;
-import com.maksim.problemService.event.ContestSubmissionWasTestedEvent;
+import com.maksim.problemService.event.StandingsUpdateEvent;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.common.serialization.IntegerDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -24,7 +22,7 @@ public class KafkaConfig {
     private String KAFKA_BOOTSTRAP;
 
     @Bean
-    ConsumerFactory<String, ContestSubmissionWasTestedEvent> consumerFactory() {
+    ConsumerFactory<String, StandingsUpdateEvent> consumerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_BOOTSTRAP);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, GROUP_ID);
@@ -33,12 +31,12 @@ public class KafkaConfig {
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JacksonJsonDeserializer.class);
         props.put(JacksonJsonDeserializer.USE_TYPE_INFO_HEADERS, false);
         props.put(ConsumerConfig.ISOLATION_LEVEL_CONFIG, "read_committed");
-        return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), new JacksonJsonDeserializer<>(ContestSubmissionWasTestedEvent.class));
+        return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), new JacksonJsonDeserializer<>(StandingsUpdateEvent.class));
     }
 
     @Bean("factory1")
-    public ConcurrentKafkaListenerContainerFactory<String, ContestSubmissionWasTestedEvent> concurrentKafkaListenerContainerFactory() {
-        var factory = new ConcurrentKafkaListenerContainerFactory<String, ContestSubmissionWasTestedEvent>();
+    public ConcurrentKafkaListenerContainerFactory<String, StandingsUpdateEvent> concurrentKafkaListenerContainerFactory() {
+        var factory = new ConcurrentKafkaListenerContainerFactory<String, StandingsUpdateEvent>();
         factory.setConsumerFactory(consumerFactory());
         return factory;
     }
