@@ -1,4 +1,5 @@
 package com.maksim.problemService.entity;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -16,10 +17,6 @@ import java.util.UUID;
 @Table(name = "processed_events")
 public class ProcessedEvent {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
-
-    @Column(name = "event_id")
     private UUID eventId;
 
     public ProcessedEvent(UUID eventId) {

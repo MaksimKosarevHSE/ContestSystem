@@ -22,10 +22,6 @@ public class ContestUser {
     @Column(name = "total_score")
     private int totalScore;
 
-    public ContestUser(ContestUserId cuId) {
-        this.id = cuId;
-    }
-
     public void addScore(int x) {
         totalScore += x;
     }

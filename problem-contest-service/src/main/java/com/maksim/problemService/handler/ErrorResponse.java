@@ -1,4 +1,4 @@
-package com.maksim.problemService.exception;
+package com.maksim.problemService.handler;
 
 
 public record ErrorResponse(String message) {}

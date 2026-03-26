@@ -1,24 +1,22 @@
 package com.maksim.problemService.dto.contest;
 
 import jakarta.validation.constraints.*;
-import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Data
-public class UpdateContestDto {
-    @Size(max = 255)
-    private String title;
+public record UpdateContestDto(
+        @Size(max = 255)
+        String title,
 
-    @Future
-    private LocalDateTime startTime;
+        @Future
+        LocalDateTime startTime,
 
-    @Future
-    private LocalDateTime endTime;
+        @Future
+        LocalDateTime endTime,
 
-    private Boolean isPublic;
+        Boolean isPublic,
 
-    @NotEmpty
-    private List<@Positive Integer> problemsId;
+        List<@Positive Integer> problemsId
+) {
 }

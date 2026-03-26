@@ -1,6 +1,6 @@
 package com.maksim.problemService.config;
 
-import com.maksim.problemService.kafka.event.StandingsUpdateEvent;
+import com.maksim.problemService.event.StandingsUpdateEvent;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,12 +19,12 @@ public class KafkaConfig {
     @Value("${consumer.group_id}")
     private String GROUP_ID;
     @Value("${spring.kafka.bootstrap-servers}")
-    private String KAFKA_BOOTSTRAP;
+    private String bootstrapServers;
 
     @Bean
     ConsumerFactory<String, StandingsUpdateEvent> consumerFactory() {
         Map<String, Object> props = new HashMap<>();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_BOOTSTRAP);
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, GROUP_ID);
         props.put(JacksonJsonDeserializer.TRUSTED_PACKAGES, "*");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);

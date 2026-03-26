@@ -15,7 +15,7 @@ public class JudgingServiceClient {
     @Value("${test.service.url}")
     private String testServiceUrl;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
 
     public void saveTestCases(SendTestCasesToJudgeServiceDto dto) {
         ResponseEntity<String> response = restTemplate

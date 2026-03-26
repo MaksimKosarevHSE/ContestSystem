@@ -1,24 +1,27 @@
 package com.maksim.problemService.service;
 
+import com.maksim.problemService.dto.PageResponseDto;
 import com.maksim.problemService.dto.contest.ContestResponseDto;
-import com.maksim.problemService.dto.contest.ContestSignatureResponseDto;
 import com.maksim.problemService.dto.contest.CreateContestDto;
 import com.maksim.problemService.dto.contest.UpdateContestDto;
 import com.maksim.problemService.dto.mapper.ContestMapper;
 import com.maksim.problemService.dto.mapper.ProblemMapper;
+import com.maksim.problemService.dto.problem.ProblemResponseDto;
 import com.maksim.problemService.dto.problem.ProblemSignatureResponseDto;
 import com.maksim.problemService.entity.*;
 import com.maksim.problemService.entity.associative.ContestProblem;
 import com.maksim.problemService.entity.associative.ContestUser;
+import com.maksim.problemService.entity.keys.ContestProblemId;
 import com.maksim.problemService.entity.keys.ContestUserId;
 import com.maksim.problemService.exception.ConflictException;
 import com.maksim.problemService.exception.ResourceNotFoundException;
 import com.maksim.problemService.exception.UnauthorizedAccessException;
-import com.maksim.problemService.exception.ValidationException;
+import com.maksim.problemService.exception.BadRequestException;
 import com.maksim.problemService.repository.ContestRepository;
+import com.maksim.problemService.repository.associative.ContestProblemRepository;
 import com.maksim.problemService.repository.associative.ContestUserRepository;
 import com.maksim.problemService.repository.ProblemRepository;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -26,147 +29,163 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ContestService {
+
     private final ProblemRepository problemRepository;
 
     private final ContestRepository contestRepository;
 
-    private final ContestMapper contestMapper;
+    private final ContestUserRepository contestUserRepository;
 
-    private final AuthServiceClient authServiceClient;
+    private final ContestMapper contestMapper;
 
     private final ProblemMapper problemMapper;
 
     private final ContestUserRepository cuRepository;
 
+    private final ContestProblemRepository contestProblemRepository;
+
     @Transactional
-    public Integer createContest(CreateContestDto dto, int userId) {
+    public ContestResponseDto createContest(CreateContestDto dto, Integer userId) {
         Contest contest = contestMapper.toEntity(dto);
         contest.setAuthorId(userId);
-        assignProblems(contest, dto.getProblemsId(), userId);
-        return contestRepository.save(contest).getId();
+        assignProblems(contest, dto.problemsId(), userId);
+        ContestResponseDto response = contestMapper.toResponseDto(contest);
+        response.setProblems(getProblemSignatures(contest));
+        contestRepository.save(contest);
+        return response;
     }
 
     @Transactional
-    public void deleteContest(int contestId, int userId) {
+    public ContestResponseDto updateContest(Integer contestId, UpdateContestDto dto, Integer userId) {
         Contest contest = contestRepository.findById(contestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Contest not found"));
-        if (contest.getAuthorId() != userId) {
+        if (contest.getAuthorId() != (int) userId) {
+            throw new UnauthorizedAccessException("Only author can update contest");
+        }
+        if (contest.getStartTime().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Contest already started. You can't change it");
+        }
+        contestMapper.updateFromPatch(contest, dto);
+
+        if (dto.problemsId() != null) {
+            assignProblems(contest, dto.problemsId(), userId);
+        }
+        ContestResponseDto response = contestMapper.toResponseDto(contest);
+        response.setProblems(getProblemSignatures(contest));
+        contestRepository.save(contest);
+        return response;
+    }
+
+    public void deleteContest(Integer contestId, Integer userId) {
+        Contest contest = contestRepository.findById(contestId)
+                .orElseThrow(() -> new ResourceNotFoundException("Contest not found"));
+        if (contest.getAuthorId() != (int) userId) {
             throw new UnauthorizedAccessException("Only author can delete contest");
         }
         contestRepository.delete(contest);
     }
 
     @Transactional
-    public void updateContest(int contestId, UpdateContestDto dto, int userId) {
+    public ContestResponseDto getContestById(Integer contestId) {
         Contest contest = contestRepository.findById(contestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Contest not found"));
-        if (contest.getAuthorId() != userId) {
-            throw new UnauthorizedAccessException("Only author can update contest");
-        }
-        if (contest.getStartTime().isBefore(LocalDateTime.now())) {
-            throw new ValidationException("Contest already started. You can't change it");
-        }
-        contestMapper.updateEntity(contest, dto);
-        assignProblems(contest, dto.getProblemsId(), userId);
-        contestRepository.save(contest);
-    }
 
-
-    public List<ProblemSignatureResponseDto> getAllProblemSignatures(Integer contestId) {
-        var contest = contestRepository.findById(contestId)
-                .orElseThrow(() -> new ResourceNotFoundException("No contest found with id " + contestId));
-        return contest.getProblems().stream().map(problemMapper::toProblemSignature).toList();
-    }
-
-    public Problem getProblem(Integer contestId, Integer problemId) {
-        return contestRepository.getProblem(contestId, problemId)
-                .orElseThrow(() -> new ResourceNotFoundException("No problem found with id " + problemId));
-    }
-
-    public ContestResponseDto getContestById(int contestId) {
-        Contest contest = contestRepository.findById(contestId)
-                .orElseThrow(() -> new ResourceNotFoundException("Contest not found"));
         ContestResponseDto dto = contestMapper.toResponseDto(contest);
 
-        List<ProblemSignatureResponseDto> problems = contest.getProblems().stream()
-                .map(problemMapper::toProblemSignature)
-                .toList();
-        dto.setProblems(problems);
+        if (LocalDateTime.now().isAfter(contest.getStartTime())) {
+            dto.setProblems(getProblemSignatures(contest));
+        }
         return dto;
     }
 
+    @Transactional
+    public PageResponseDto<ContestResponseDto> getPublicContests(Integer page, Integer pageSize) {
+        Page<Contest> contests = contestRepository.findAllByOrderByStartTimeDesc(PageRequest.of(page - 1, pageSize));
+        return buildResponsePage(contests);
+    }
 
-    public Page<ContestSignatureResponseDto> getPublicContests(Integer page, Integer pageSize) {
-        Page<ContestSignatureResponseDto> dto = contestRepository.getAll(PageRequest.of(page - 1, pageSize));
-        setHandles(dto.getContent());
-        return dto;
+    @Transactional
+    public PageResponseDto<ContestResponseDto> getUsersContests(Integer userId, Integer page, Integer pageSize) {
+        Page<Contest> contests = contestUserRepository.findContestsByUserId(userId, PageRequest.of(page - 1, pageSize));
+        return buildResponsePage(contests);
+    }
+
+    private PageResponseDto<ContestResponseDto> buildResponsePage(Page<Contest> contests) {
+        Page<ContestResponseDto> response = contests.map(contest -> {
+            ContestResponseDto dto = contestMapper.toResponseDto(contest);
+            if (LocalDateTime.now().isAfter(contest.getStartTime())) {
+                dto.setProblems(getProblemSignatures(contest));
+            }
+            return dto;
+        });
+        return PageResponseDto.from(response);
     }
 
 
-    public Page<ContestSignatureResponseDto> getUserContests(int userId, Integer page, Integer pageSize) {
-        Page<ContestSignatureResponseDto> dtoList = contestRepository.getUserContests(userId, PageRequest.of(page - 1, pageSize));
-        setHandles(dtoList.getContent());
-        return dtoList;
+    public ProblemResponseDto getProblem(Integer contestId, Integer problemId) {
+        ContestProblem cp = contestProblemRepository.findByContestIdAndProblemId(contestId, problemId)
+                .orElseThrow(() -> new ResourceNotFoundException("Problem not found in contest"));
+        if (cp.getContest().getStartTime().isAfter(LocalDateTime.now())) {
+            throw new ConflictException("Contest has not started");
+        }
+        return problemMapper.toResponseDto(cp.getProblem());
     }
 
-    private void setHandles(List<ContestSignatureResponseDto> contests) {
-        List<Integer> authorIds = contests.stream()
-                .map(ContestSignatureResponseDto::getAuthorId)
-                .distinct()
-                .toList();
-        Map<Integer, String> handles = authServiceClient.getUsersHandles(authorIds);
-        contests.forEach(dto -> dto.setAuthorHandle(handles.get(dto.getAuthorId())));
-    }
-
-
-    public ProblemConstraintsResponseDto getConstraints(Integer contestId, Integer problemId) {
-        return contestRepository.getProblemConstraints(contestId, problemId)
-                .orElseThrow(() -> new ResourceNotFoundException("No problem found with id " + problemId));
-    }
-
+    @Transactional
     public void registerUser(Integer contestId, Integer userId) {
         if (!contestRepository.existsById(contestId))
-            throw new ResourceNotFoundException("There is no contest with id " + contestId);
+            throw new ResourceNotFoundException("Contest not found");
 
-        var cuDb = cuRepository.findById_ContestIdAndId_UserId(contestId, userId);
 
-        if (cuDb.isPresent())
+        ContestUserId contestUserId = new ContestUserId(userId, contestId);
+        if (contestUserRepository.existsById(contestUserId))
             throw new ConflictException("User already registered");
 
         ContestUser cu = new ContestUser();
-        cu.setId(new ContestUserId(userId, contestId));
+        cu.setId(contestUserId);
         cu.setContest(contestRepository.getReferenceById(contestId));
         cuRepository.save(cu);
     }
 
-    private void assignProblems(Contest contest, List<Integer> problemIds, int userId) {
-        List<Integer> distinctProblemsId = problemIds.stream().distinct().toList();
-        List<Problem> userProblemIntersection = contestRepository.getAuthorProblemsList(userId, distinctProblemsId);
+    public PageResponseDto<Integer> getRegisteredUsersIds(Integer contestId, Integer page, Integer pageSize) {
+        Page<Integer> ids = contestUserRepository.findById_ContestId(contestId, PageRequest.of(page, pageSize))
+                .map(contestUser -> contestUser.getId().getUserId());
+        return PageResponseDto.from(ids);
+    }
 
-        if (userProblemIntersection.size() != distinctProblemsId.size()) {
-            // ограничения маленькие, О(n^2)
-            Problem tmp = new Problem();
-            StringBuilder message = new StringBuilder("Some problems are not found or do not belong you. Incorrect ids: [");
-            for (var taskId : distinctProblemsId) {
-                tmp.setId(taskId);
-                if (!userProblemIntersection.contains(tmp)) message.append(taskId).append(", ");
-            }
-            message.setLength(message.length() - 2);
-            message.append("]");
-            throw new ValidationException(message.toString());
+    private void assignProblems(Contest contest, List<Integer> problemIds, int userId) {
+        if (problemIds == null || problemIds.isEmpty())
+            throw new BadRequestException("Contest must has at least 1 problem");
+
+        List<Integer> userProblemIds = problemIds.stream().distinct().toList();
+        List<Problem> dbUserProblemIds = problemRepository
+                .findProblemsByAuthorAndIds(userId, userProblemIds);
+
+        if (userProblemIds.size() != dbUserProblemIds.size()) {
+            Set<Integer> dbIds = dbUserProblemIds.stream().map(Problem::getId).collect(Collectors.toSet());
+            List<Integer> badIds = userProblemIds.stream().filter(id -> !dbIds.contains(id)).toList();
+            throw new BadRequestException("Some problems not found or do not belong to you: " + badIds);
         }
 
-        contest.setProblems(distinctProblemsId.stream()
+        contest.getProblems().clear();
+        contest.getProblems().addAll((userProblemIds.stream()
                 .map(problemId -> {
-                    Problem problem = problemRepository.getReferenceById(problemId);
                     ContestProblem cp = new ContestProblem();
+                    cp.setProblem(problemRepository.getReferenceById(problemId));
                     cp.setContest(contest);
-                    cp.setProblem(problem);
                     return cp;
-                }).toList());
+                }).toList()));
     }
+
+    private List<ProblemSignatureResponseDto> getProblemSignatures(Contest contest) {
+        return contest.getProblemList().stream()
+                .map(problemMapper::toProblemSignature)
+                .toList();
+    }
+
 }

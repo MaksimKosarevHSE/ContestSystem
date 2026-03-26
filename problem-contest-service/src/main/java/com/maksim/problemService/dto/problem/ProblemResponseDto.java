@@ -1,27 +1,22 @@
 package com.maksim.problemService.dto.problem;
 
-import com.maksim.problemService.enums.CheckerType;
-import com.maksim.problemService.enums.ProgrammingLanguage;
-import lombok.Data;
-
-import java.time.LocalDateTime;
 import java.util.List;
 
-@Data
-public class ProblemResponseDto {
-    private Integer id;
-    private String title;
-    private String statement;
-    private String input;
-    private String output;
-    private String notes;
-    private Integer samplesCount;
-    private List<String> sampleInput;
-    private List<String> sampleOutput;
-    private Integer complexity;
-    private Integer compileTimeLimit;
-    private Integer timeLimit;
-    private Integer memoryLimit;
-    private Integer creatorId;
-    private Boolean isPublic;
+public record ProblemResponseDto(
+        Integer id,
+        String title,
+        String statement,
+        String input,
+        String output,
+        String notes,
+        Integer samplesCount,
+        List<String> sampleInput,
+        List<String> sampleOutput,
+        Integer complexity,
+        Integer compileTimeLimit,
+        Integer timeLimit,
+        Integer memoryLimit,
+        Integer creatorId,
+        Boolean isPublic
+) {
 }

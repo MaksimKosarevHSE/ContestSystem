@@ -46,12 +46,12 @@ public class Problem {
     @Column(name = "memory_limit")
     private Integer memoryLimit;
 
-    public Problem(int creatorId, String title, boolean isPublic,
+    public Problem(Integer creatorId, String title, Boolean isPublic,
                    String statement, String input,
                    String output, String notes,
                    List<String> sampleInput, List<String> sampleOutput,
-                   int complexity, double compileTimeLimit,
-                   double timeLimit, double memoryLimit) {
+                   Integer complexity, Integer compileTimeLimit,
+                   Integer timeLimit, Integer memoryLimit) {
         this.isPublic = isPublic;
         this.creatorId = creatorId;
         this.title = title;

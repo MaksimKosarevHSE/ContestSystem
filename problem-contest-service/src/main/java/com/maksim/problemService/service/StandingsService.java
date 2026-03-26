@@ -1,14 +1,17 @@
 package com.maksim.problemService.service;
 
 
+import com.maksim.problemService.dto.PageResponseDto;
 import com.maksim.problemService.dto.standings.TaskProgressResponseDto;
 import com.maksim.problemService.dto.standings.UserProgressResponseDto;
+import com.maksim.problemService.entity.Contest;
 import com.maksim.problemService.entity.associative.ContestUser;
 import com.maksim.problemService.entity.associative.ContestUserTask;
 import com.maksim.problemService.enums.Status;
 import com.maksim.problemService.entity.keys.ContestUserId;
 import com.maksim.problemService.entity.keys.ContestUserTaskId;
-import com.maksim.problemService.kafka.event.StandingsUpdateEvent;
+import com.maksim.problemService.event.StandingsUpdateEvent;
+import com.maksim.problemService.exception.AccessDeniedException;
 import com.maksim.problemService.exception.ResourceNotFoundException;
 import com.maksim.problemService.repository.ContestRepository;
 import com.maksim.problemService.repository.associative.ContestUserRepository;
@@ -20,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -45,16 +49,13 @@ public class StandingsService {
         int taskId = event.getProblemId();
 
         ContestUser cu = getContestUser(contestId, userId);
-
         ContestUserTaskId cutId = new ContestUserTaskId(contestId, userId, taskId);
-
         ContestUserTask cut = cutRepository.findById(cutId)
                 .orElseGet(() -> createNewTask(cutId, contestId, taskId));
 
         if (cut.isSolved()) {
             return;
         }
-
         cut.incAttempts();
 
         if (event.getStatus() == Status.OK) {
@@ -67,7 +68,6 @@ public class StandingsService {
 
         cutRepository.save(cut);
         cuRepository.save(cu);
-
         updateCache(cu, cut);
     }
 
@@ -96,16 +96,23 @@ public class StandingsService {
     }
 
 
-    public List<UserProgressResponseDto> getLeaderboard(int contestId, int page, int pageSize) {
+    public PageResponseDto<UserProgressResponseDto> getLeaderboard(int contestId, int page, int pageSize) {
+        Contest contest = contestRepository.findById(contestId)
+                .orElseThrow(() -> new ResourceNotFoundException("Contest not found"));
+        if (contest.getStartTime().isAfter(LocalDateTime.now())) {
+            throw new AccessDeniedException("The contest has not started");
+        }
         ensureCacheBuilt(contestId);
 
         page--;
         int start = pageSize * page;
         int end = start + pageSize - 1;
 
-        var leaders = cacheService.getLeaderboardRange(contestId,start,end);
+        var leaders = cacheService.getLeaderboardRange(contestId, start, end);
+        Long totalElements = cacheService.getLeaderboardTotalSize(contestId);
+
         if (leaders == null || leaders.isEmpty()) {
-            return Collections.emptyList();
+            return PageResponseDto.emptyPage(UserProgressResponseDto.class);
         }
 
         List<UserProgressResponseDto> result = new ArrayList<>(leaders.size());
@@ -118,8 +125,8 @@ public class StandingsService {
             Map<Integer, TaskProgressResponseDto> taskMap = cacheService.getUserTasksDetails(contestId, userId);
             if (taskMap.isEmpty()) {
                 UserProgressResponseDto userProgress = getUserProgressFromDb(contestId, userId);
-                taskMap = userProgress.getTaskProgress().stream()
-                        .collect(Collectors.toMap(TaskProgressResponseDto::getTaskId, t -> t));
+                taskMap = userProgress.taskProgress().stream()
+                        .collect(Collectors.toMap(TaskProgressResponseDto::taskId, t -> t));
 
                 for (Map.Entry<Integer, TaskProgressResponseDto> entry : taskMap.entrySet()) {
                     cacheService.putUserTaskDetail(contestId, userId, entry.getKey(), entry.getValue());
@@ -127,18 +134,20 @@ public class StandingsService {
             }
 
             List<TaskProgressResponseDto> tasks = new ArrayList<>(taskMap.values());
-            tasks.sort(Comparator.comparingInt(TaskProgressResponseDto::getTaskId));
+            tasks.sort(Comparator.comparingInt(TaskProgressResponseDto::taskId));
 
-            UserProgressResponseDto dto = new UserProgressResponseDto();
-            dto.setUserId(userId);
-            dto.setScore(totalScore);
-            dto.setPlace(rank);
-            dto.setTaskProgress(tasks);
+            UserProgressResponseDto dto = new UserProgressResponseDto(userId, rank, tasks, totalScore);
             result.add(dto);
             rank++;
         }
 
-        return result;
+        return new PageResponseDto<>(
+                result,
+                page + 1,
+                pageSize,
+                totalElements,
+                Long.valueOf((totalElements + (pageSize - 1)) / pageSize).intValue()
+        );
     }
 
 
@@ -170,13 +179,10 @@ public class StandingsService {
             List<ContestUserTask> userTasks = tasksByUser.getOrDefault(userId, Collections.emptyList());
             List<TaskProgressResponseDto> taskDtos = userTasks.stream()
                     .map(this::convertToDto)
-                    .sorted(Comparator.comparingInt(TaskProgressResponseDto::getTaskId))
+                    .sorted(Comparator.comparingInt(TaskProgressResponseDto::taskId))
                     .toList();
 
-            UserProgressResponseDto dto = new UserProgressResponseDto();
-            dto.setUserId(userId);
-            dto.setScore(cu.getTotalScore());
-            dto.setTaskProgress(taskDtos);
+            UserProgressResponseDto dto = new UserProgressResponseDto(userId, 0, taskDtos, cu.getTotalScore());
             users.add(dto);
         }
 
@@ -192,12 +198,12 @@ public class StandingsService {
 
     //  прогресс без места и totalScore
     private UserProgressResponseDto getUserProgressFromDb(int contestId, int userId) {
-        ContestUser  cu = getContestUser(contestId, userId);
+        ContestUser cu = getContestUser(contestId, userId);
         List<ContestUserTask> tasks = cutRepository.findById_ContestIdAndId_UserId(contestId, userId);
 
         List<TaskProgressResponseDto> taskDtos = tasks.stream()
                 .map(this::convertToDto)
-                .sorted(Comparator.comparingInt(TaskProgressResponseDto::getTaskId))
+                .sorted(Comparator.comparingInt(TaskProgressResponseDto::taskId))
                 .toList();
         return new UserProgressResponseDto(userId, 0, taskDtos, cu.getTotalScore());
     }

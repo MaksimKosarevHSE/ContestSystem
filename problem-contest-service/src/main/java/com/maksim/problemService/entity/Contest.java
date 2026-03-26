@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -27,10 +28,10 @@ public class Contest {
     private LocalDateTime startTime;
     @Column(name = "end_time")
     private LocalDateTime endTime;
-    @OneToMany(mappedBy = "contest", cascade = CascadeType.PERSIST)
-    private List<ContestProblem> problems;
+    @OneToMany(mappedBy = "contest", cascade = CascadeType.ALL,  orphanRemoval = true)
+    private List<ContestProblem> problems = new ArrayList<>();
 
-    public List<Problem> getProblems(){
+    public List<Problem> getProblemList() {
         return problems.stream().map(ContestProblem::getProblem).toList();
     }
 }

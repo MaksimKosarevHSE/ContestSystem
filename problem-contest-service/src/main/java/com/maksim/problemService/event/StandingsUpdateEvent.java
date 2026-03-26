@@ -1,4 +1,4 @@
-package com.maksim.problemService.kafka.event;
+package com.maksim.problemService.event;
 
 import com.maksim.problemService.enums.Status;
 import lombok.AllArgsConstructor;

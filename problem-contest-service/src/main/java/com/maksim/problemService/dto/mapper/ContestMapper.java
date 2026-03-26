@@ -20,5 +20,6 @@ public interface ContestMapper {
 //    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateFromPatch(@MappingTarget Contest entity, UpdateContestDto dto);
 
+    @Mapping(target="problems", ignore = true)
     ContestResponseDto toResponseDto(Contest contest);
 }

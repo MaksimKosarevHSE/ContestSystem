@@ -1,6 +1,7 @@
-package com.maksim.problemService.kafka.event;
+package com.maksim.problemService.kafka;
 
 import com.maksim.problemService.entity.ProcessedEvent;
+import com.maksim.problemService.event.StandingsUpdateEvent;
 import com.maksim.problemService.repository.ProcessedEventRepository;
 import com.maksim.problemService.service.StandingsService;
 import lombok.RequiredArgsConstructor;
@@ -15,21 +16,20 @@ import java.util.UUID;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class EventListener {
+public class StandingsEventListener {
 
     private final StandingsService standingsService;
 
     private final ProcessedEventRepository processedEventRepository;
 
     @KafkaListener(topics = "standings-update-event-topic", containerFactory = "factory1")
-    private void standingsUpdateEventHandler(@Payload StandingsUpdateEvent event,
-                                             @Header("event-id") UUID eventId) {
-        if (processedEventRepository.existsByEventId(eventId)){
+    public void handleStandingsUpdate(@Payload StandingsUpdateEvent event,
+                                      @Header(value = "event-id") UUID eventId) {
+        if (processedEventRepository.existsByEventId(eventId)) {
             log.info("Duplicate standings update event with id {}", eventId);
             return;
         }
         standingsService.handleUpdateEvent(event);
         processedEventRepository.save(new ProcessedEvent(eventId));
     }
-
 }

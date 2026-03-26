@@ -2,7 +2,7 @@ package com.maksim.problemService.validators;
 
 import com.maksim.problemService.dto.problem.ProblemCreateDto;
 import com.maksim.problemService.enums.CheckerType;
-import com.maksim.problemService.exception.ValidationException;
+import com.maksim.problemService.exception.BadRequestException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,32 +22,32 @@ public class ProblemValidator {
 
 
     private void validateChecker(ProblemCreateDto problem) {
-        if (problem.getCheckerType() == CheckerType.DEFAULT_EXACT_MATCH_CHECKER)
+        if (problem.checkerType() == CheckerType.DEFAULT_EXACT_MATCH_CHECKER)
             return;
 
-        var file = problem.getFileSourceChecker();
+        var file = problem.fileSourceChecker();
 
         if (file == null || file.isEmpty())
-            throw new ValidationException("Custom checker is not provided");
+            throw new BadRequestException("Custom checker is not provided");
     }
 
     private void validateTestFiles(ProblemCreateDto problem) {
-        int num = problem.getTestCasesNum();
-        var inputFiles = problem.getInputTestCases();
-        var outputFiles = problem.getOutputTestCases();
+        int num = problem.testCasesNum();
+        var inputFiles = problem.inputTestCases();
+        var outputFiles = problem.outputTestCases();
 
         if (inputFiles == null || inputFiles.size() != num)
-            throw new ValidationException("Count of input test files must be " + num);
+            throw new BadRequestException("Count of input test files must be " + num);
 
         if (outputFiles == null || outputFiles.size() != num)
-            throw new ValidationException("Count of output test files must be " + num);
+            throw new BadRequestException("Count of output test files must be " + num);
 
         List<String> inputFileNames;
         List<String> outputFileNames;
         try {
-            inputFileNames = problem.getInputTestCases().stream()
+            inputFileNames = problem.inputTestCases().stream()
                     .map(MultipartFile::getOriginalFilename).sorted().toList();
-            outputFileNames = problem.getOutputTestCases().stream()
+            outputFileNames = problem.outputTestCases().stream()
                     .map(MultipartFile::getOriginalFilename).sorted().toList();
         } catch (Exception ex) {
             throw ex;
@@ -59,9 +59,9 @@ public class ProblemValidator {
             int pos2 = Collections.binarySearch(outputFileNames, outFile);
 
             if (pos1 < 0)
-                throw new ValidationException("Missing file with name " + inFile + ". Input files must be numbered named from 1.in to " + num + ".out");
+                throw new BadRequestException("Missing file with name " + inFile + ". Input files must be numbered named from 1.in to " + num + ".out");
             if (pos2 < 0)
-                throw new ValidationException("Missing file with name " + outFile + ". Output files must be numbered named from 1.out to " + num + ".out");
+                throw new BadRequestException("Missing file with name " + outFile + ". Output files must be numbered named from 1.out to " + num + ".out");
 
             if (inputFiles.get(pos1) == null || outputFiles.get(pos2) == null) {
                 throw new RuntimeException("Unexpected error");
@@ -71,12 +71,12 @@ public class ProblemValidator {
     }
 
     private void validateSamples(ProblemCreateDto dto) {
-        int count = dto.getSamplesCount();
+        int count = dto.samplesCount();
         if (count == 0) return;
-        if (dto.getSampleInput() == null || dto.getSampleInput().size() != count)
-            throw new ValidationException("Inputs of samples must be equal to samples count");
-        if (dto.getSampleOutput() == null || dto.getSampleOutput().size() != count)
-            throw new ValidationException("Outputs of samples must be equal to samples count");
+        if (dto.sampleInput() == null || dto.sampleInput().size() != count)
+            throw new BadRequestException("Inputs of samples must be equal to samples count");
+        if (dto.sampleOutput() == null || dto.sampleOutput().size() != count)
+            throw new BadRequestException("Outputs of samples must be equal to samples count");
     }
 
 }

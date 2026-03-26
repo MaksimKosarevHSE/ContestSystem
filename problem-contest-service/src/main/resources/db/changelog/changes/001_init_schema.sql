@@ -26,10 +26,10 @@ CREATE TABLE IF NOT EXISTS contests (
     );
 
 CREATE TABLE IF NOT EXISTS contest_problem (
+    id SERIAL PRIMARY KEY,
    contest_id INTEGER NOT NULL,
    problem_id INTEGER NOT NULL,
-   score INTEGER NOT NULL DEFAULT 0,
-   CONSTRAINT pk_contest_problem PRIMARY KEY (contest_id, problem_id)
+   score INTEGER NOT NULL DEFAULT 0
     );
 
 
@@ -51,6 +51,10 @@ CREATE TABLE IF NOT EXISTS contest_user_task (
      solution_time TIMESTAMP,
      CONSTRAINT pk_contest_user_task PRIMARY KEY (contest_id, user_id, task_id)
     );
+
+CREATE TABLE IF NOT EXISTS processed_events (
+    event_id UUID PRIMARY KEY
+);
 
 
 
@@ -85,4 +89,3 @@ ALTER TABLE contest_user_task
             REFERENCES contests(id)
             ON DELETE CASCADE
             ON UPDATE CASCADE;
-

@@ -25,19 +25,19 @@ public class SendTestCasesToJudgeServiceDto {
 
     public static SendTestCasesToJudgeServiceDto from(ProblemCreateDto p) {
         var target = new SendTestCasesToJudgeServiceDto();
-        target.countOfTestCases = p.getTestCasesNum();
-        target.checkerType = p.getCheckerType();
+        target.countOfTestCases = p.testCasesNum();
+        target.checkerType = p.checkerType();
 
-        if (p.getCheckerType() == CheckerType.CUSTOM_CHECKER) {
+        if (p.checkerType() == CheckerType.CUSTOM_CHECKER) {
             try {
-                target.checkerSourceCode = p.getFileSourceChecker().getBytes();
+                target.checkerSourceCode = p.fileSourceChecker().getBytes();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            target.checkerLanguage = p.getCheckerLanguage();
+            target.checkerLanguage = p.checkerLanguage();
         }
 
-        target.testFilesContent = Stream.concat(p.getInputTestCases().stream(), p.getOutputTestCases().stream())
+        target.testFilesContent = Stream.concat(p.inputTestCases().stream(), p.outputTestCases().stream())
                 .map(file -> {
                     try {
                         return file.getBytes();
@@ -46,7 +46,7 @@ public class SendTestCasesToJudgeServiceDto {
                     }
                 }).toList();
 
-        target.testFilesNames = Stream.concat(p.getInputTestCases().stream(), p.getOutputTestCases().stream())
+        target.testFilesNames = Stream.concat(p.inputTestCases().stream(), p.outputTestCases().stream())
                 .map(MultipartFile::getOriginalFilename).toList();
 
         return target;

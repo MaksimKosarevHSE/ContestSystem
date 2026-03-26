@@ -18,13 +18,15 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class StandingsCacheService {
 
+    private static final String LEADERBOARD_PREFIX = "contest:leaderboard:";
+
+    private static final String USER_DETAILS_PREFIX = "contest:details:";
+
+    private static final Duration CACHE_TTL = Duration.ofHours(1);
+
     private final StringRedisTemplate redisTemplate;
 
     private final ObjectMapper objectMapper;
-
-    private static final String LEADERBOARD_PREFIX = "contest:leaderboard:";
-    private static final String USER_DETAILS_PREFIX = "contest:details:";
-    private static final Duration CACHE_TTL = Duration.ofHours(1);
 
     private String leaderboardKey(int contestId) {
         return LEADERBOARD_PREFIX + contestId;
@@ -44,6 +46,10 @@ public class StandingsCacheService {
 
     public Set<ZSetOperations.TypedTuple<String>> getLeaderboardRange(int contestId, long start, long end) {
         return redisTemplate.opsForZSet().reverseRangeWithScores(leaderboardKey(contestId), start, end);
+    }
+
+    public Long getLeaderboardTotalSize(int contestId) {
+        return redisTemplate.opsForZSet().size(leaderboardKey(contestId));
     }
 
     public void putUserTaskDetail(int contestId, int userId, int taskId, TaskProgressResponseDto taskDetail) {
@@ -89,12 +95,12 @@ public class StandingsCacheService {
 
         for (UserProgressResponseDto user : users) {
 
-            redisTemplate.opsForZSet().add(leaderboardKey, String.valueOf(user.getUserId()), user.getScore());
-            String userKey = userDetailsKey(contestId, user.getUserId());
+            redisTemplate.opsForZSet().add(leaderboardKey, String.valueOf(user.userId()), user.score());
+            String userKey = userDetailsKey(contestId, user.userId());
 
-            Map<String, String> taskMap = user.getTaskProgress().stream()
+            Map<String, String> taskMap = user.taskProgress().stream()
                     .collect(Collectors.toMap(
-                            t -> String.valueOf(t.getTaskId()),
+                            t -> String.valueOf(t.taskId()),
                             t -> {
                                 try {
                                     return objectMapper.writeValueAsString(t);
@@ -104,7 +110,7 @@ public class StandingsCacheService {
                                 }
                             }
                     ));
-            taskMap.values().removeIf(Objects::isNull);
+//            taskMap.values().removeIf(Objects::isNull);
             if (!taskMap.isEmpty()) {
                 redisTemplate.opsForHash().putAll(userKey, taskMap);
                 redisTemplate.expire(userKey, CACHE_TTL);

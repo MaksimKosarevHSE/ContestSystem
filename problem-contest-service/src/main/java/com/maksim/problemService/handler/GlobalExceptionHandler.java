@@ -1,5 +1,10 @@
-package com.maksim.problemService.exception;
+package com.maksim.problemService.handler;
 
+import com.maksim.problemService.exception.AccessDeniedException;
+import com.maksim.problemService.exception.BadRequestException;
+import com.maksim.problemService.exception.ConflictException;
+import com.maksim.problemService.exception.ResourceNotFoundException;
+import com.maksim.problemService.exception.UnauthorizedAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -25,25 +30,29 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(ex.getMessage()));
     }
 
-    @ExceptionHandler(com.maksim.problemService.exception.ValidationException.class)
-    public ResponseEntity<ErrorResponse> handleValidation(ValidationException ex) {
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ErrorResponse> handleValidation(BadRequestException ex) {
         return ResponseEntity.badRequest()
                 .body(new ErrorResponse(ex.getMessage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
-        String message = ex.getBindingResult().getFieldErrors().getFirst().getDefaultMessage();
+        String message = ex.getBindingResult().getFieldErrors().stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .collect(Collectors.joining(", "));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(message));
     }
 
+    @ExceptionHandler({UnauthorizedAccessException.class, AccessDeniedException.class})
+    public ResponseEntity<ErrorResponse> handleUnauthorized(RuntimeException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(ex.getMessage()));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneric(Exception ex) {
-        // временно
-        throw new RuntimeException(ex);
-//        return ResponseEntity.status(500).body(new ErrorResponse(ex.getMessage()));
-//        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-//                .body(new ErrorResponse("Внутренняя ошибка сервера"));
+        ex.printStackTrace();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse("Internal server error"));
     }
 }

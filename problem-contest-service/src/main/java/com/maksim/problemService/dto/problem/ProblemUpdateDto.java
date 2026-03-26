@@ -13,5 +13,4 @@ public record ProblemUpdateDto(
         List<String> sampleOutput,
         Integer complexity
 ) {
-
 }
