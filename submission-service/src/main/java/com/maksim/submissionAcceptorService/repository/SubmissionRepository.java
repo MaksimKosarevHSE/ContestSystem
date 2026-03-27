@@ -1,6 +1,5 @@
 package com.maksim.submissionAcceptorService.repository;
 
-import com.maksim.submissionAcceptorService.dto.SubmissionResponseDto;
 import com.maksim.submissionAcceptorService.enums.ProgrammingLanguage;
 import com.maksim.submissionAcceptorService.enums.Status;
 import com.maksim.submissionAcceptorService.entity.Submission;
@@ -14,6 +13,8 @@ import java.util.Optional;
 
 public interface SubmissionRepository extends JpaRepository<Submission, Long> {
 
+    Optional<Submission> findByIdAndContestId(Long id, Integer contestId);
+
     @Query("SELECT s FROM Submission s " +
             "WHERE (:userId IS NULL OR s.userId = :userId) " +
             "AND (:problemId IS NULL OR s.problemId = :problemId) " +
@@ -21,12 +22,9 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long> {
             "AND (:status IS NULL OR s.status = :status) " +
             "AND (:language IS NULL OR s.programmingLanguage = :language) " +
             "ORDER BY s.id DESC")
-    Page<Submission> findFiltered(@Param("contestId") Integer contestId,
-                                  @Param("problemId") Integer problemId,
-                                  @Param("userId") Integer userId,
-                                  @Param("status") Status status,
-                                  @Param("language") ProgrammingLanguage language,
-                                  Pageable pageable);
-
-    Optional<Submission> findByIdAndContestId(long id, Integer contestId);
+    Page<Submission> findAllFiltered(@Param("contestId") Integer contestId,
+                                     @Param("problemId") Integer problemId,
+                                     @Param("userId") Integer userId,
+                                     @Param("status") Status status,
+                                     Pageable pageable);
 }

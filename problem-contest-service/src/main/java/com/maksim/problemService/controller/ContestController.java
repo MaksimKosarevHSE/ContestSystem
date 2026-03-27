@@ -4,9 +4,11 @@ import com.maksim.problemService.dto.PageResponseDto;
 import com.maksim.problemService.dto.contest.ContestResponseDto;
 import com.maksim.problemService.dto.contest.CreateContestDto;
 import com.maksim.problemService.dto.contest.UpdateContestDto;
+import com.maksim.problemService.dto.problem.ProblemConstrainsResponseDto;
 import com.maksim.problemService.dto.problem.ProblemResponseDto;
 import com.maksim.problemService.handler.ErrorResponse;
 import com.maksim.problemService.service.ContestService;
+import com.maksim.problemService.service.ProblemService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -27,6 +29,8 @@ import java.util.List;
 public class ContestController {
 
     private final ContestService contestService;
+
+    private final ProblemService problemService;
 
     private final Integer PAGE_SIZE = 20;
 
@@ -178,6 +182,23 @@ public class ContestController {
     public ResponseEntity<ProblemResponseDto> getContestsProblem(@PathVariable Integer contestId,
                                                                  @PathVariable Integer problemId) {
         return ResponseEntity.ok(contestService.getProblem(contestId, problemId));
+    }
+
+
+    @GetMapping("/contest/{contestId}/problem/{problemId}/constraints")
+    @Operation(summary = "Get problem's constraints")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Problem's constraints",
+                    content = @Content(schema = @Schema(implementation = ProblemConstrainsResponseDto.class))),
+            @ApiResponse(responseCode = "404",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "500",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+
+    public ResponseEntity<ProblemConstrainsResponseDto> getProblemConstraints(@PathVariable Integer contestId,
+                                                                              @PathVariable Integer problemId) {
+        return ResponseEntity.ok(problemService.getProblemConstraints(contestId, problemId));
     }
 
 }

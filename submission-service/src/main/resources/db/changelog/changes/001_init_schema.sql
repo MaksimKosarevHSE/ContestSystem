@@ -13,3 +13,10 @@ CREATE TABLE IF NOT EXISTS submissions (
    test_num INTEGER,
    checker_message TEXT
 );
+
+CREATE TABLE IF NOT EXISTS outbox_event (
+    id UUID PRIMARY KEY,
+    event_id UUID,
+    event_type TEXT,
+    payload TEXT
+)

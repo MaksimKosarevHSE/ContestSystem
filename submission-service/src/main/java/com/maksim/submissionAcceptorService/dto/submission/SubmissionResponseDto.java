@@ -1,4 +1,4 @@
-package com.maksim.submissionAcceptorService.dto;
+package com.maksim.submissionAcceptorService.dto.submission;
 
 import com.maksim.submissionAcceptorService.enums.ProgrammingLanguage;
 import com.maksim.submissionAcceptorService.enums.Status;
@@ -11,13 +11,13 @@ import java.time.LocalDateTime;
 @Schema(description = "Short submission information")
 public class SubmissionResponseDto {
     @Schema(description = "Submission ID", example = "12345")
-    private long id;
+    private Long id;
 
     @Schema(description = "Sender's ID", example = "42")
-    private int userId;
+    private Integer userId;
 
     @Schema(description = "Problem ID", example = "101")
-    private int problemId;
+    private Integer problemId;
 
     @Schema(description = "Submission time", example = "2026-01-01T00:00:00")
     private LocalDateTime time;
@@ -32,8 +32,8 @@ public class SubmissionResponseDto {
     private Integer testNum;
 
     @Schema(description = "Execution time (ms)", example = "150")
-    private int executionTime;
+    private Integer executionTime;
 
     @Schema(description = "Used memory (KB)", example = "10240")
-    private int usedMemory;
+    private Integer usedMemory;
 }

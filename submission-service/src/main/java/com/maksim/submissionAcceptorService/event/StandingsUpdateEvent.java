@@ -1,4 +1,4 @@
-package com.maksim.submissionAcceptorService.kafka.event;
+package com.maksim.submissionAcceptorService.event;
 
 import com.maksim.submissionAcceptorService.enums.Status;
 import lombok.AllArgsConstructor;

@@ -1,10 +1,10 @@
-    package com.maksim.submissionAcceptorService.kafka.event;
+    package com.maksim.submissionAcceptorService.event;
 
     import com.maksim.submissionAcceptorService.enums.Status;
     import lombok.*;
 
     @Data
-    public class SubmissionJudgingProgressEvent {
+    public class SolutionJudgedEvent {
         private Long submissionId;
         private Status status;
         private Integer testNum;

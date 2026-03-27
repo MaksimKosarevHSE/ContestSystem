@@ -1,11 +1,9 @@
-package com.maksim.submissionAcceptorService.kafka.event;
+package com.maksim.submissionAcceptorService.event;
 
 import com.maksim.submissionAcceptorService.enums.ProgrammingLanguage;
 import jakarta.annotation.Nullable;
 import lombok.*;
 
-
-//@AllArgsConstructor
 @Data
 @Builder
 public class SolutionSubmittedEvent {

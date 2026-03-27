@@ -1,15 +1,20 @@
 package com.maksim.submissionAcceptorService.service;
 
-import com.maksim.submissionAcceptorService.dto.*;
+import com.maksim.submissionAcceptorService.client.ProblemServiceClient;
+import com.maksim.submissionAcceptorService.dto.PageResponseDto;
 import com.maksim.submissionAcceptorService.dto.mapper.SubmissionMapper;
+import com.maksim.submissionAcceptorService.dto.problem.ProblemConstrainsResponseDto;
+import com.maksim.submissionAcceptorService.dto.submission.SubmissionCreateDto;
+import com.maksim.submissionAcceptorService.dto.submission.SubmissionDetailsResponseDto;
+import com.maksim.submissionAcceptorService.dto.submission.SubmissionResponseDto;
 import com.maksim.submissionAcceptorService.enums.ProgrammingLanguage;
 import com.maksim.submissionAcceptorService.enums.Status;
 import com.maksim.submissionAcceptorService.entity.Submission;
-import com.maksim.submissionAcceptorService.kafka.event.SolutionSubmittedEvent;
-import com.maksim.submissionAcceptorService.kafka.event.SubmissionJudgingProgressEvent;
+import com.maksim.submissionAcceptorService.event.SolutionSubmittedEvent;
+import com.maksim.submissionAcceptorService.event.SolutionJudgedEvent;
 import com.maksim.submissionAcceptorService.exception.ResourceNotFoundException;
 import com.maksim.submissionAcceptorService.exception.UnauthorizedAccessException;
-import com.maksim.submissionAcceptorService.exception.ValidationException;
+import com.maksim.submissionAcceptorService.exception.BadRequestException;
 import com.maksim.submissionAcceptorService.repository.SubmissionRepository;
 import com.maksim.submissionAcceptorService.service.outbox.OutboxEventService;
 import lombok.RequiredArgsConstructor;
@@ -22,9 +27,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
-@Service
 @Slf4j
+@Service
 @RequiredArgsConstructor
 public class SubmissionService {
 
@@ -44,64 +50,78 @@ public class SubmissionService {
 
     private final OutboxEventService outboxEventService;
 
-    private static final int PAGE_SIZE = 16;
+    private static final int PAGE_SIZE = 20;
 
     @Transactional
-    public long submitSolution(int problemId, Integer contestId, int userId, CreateSubmissionDto solution) {
-        try {
-            LocalDateTime submissionTime = LocalDateTime.now();
-            ProblemConstraintsResponseDto constraints = problemServiceClient.getProblemConstraints(problemId, contestId);
-            boolean isUpsolving = false;
-            if (contestId != null) {
-                if (submissionTime.isBefore(constraints.getContestStartTime())) {
-                    throw new RuntimeException("The contest has not started");
-                }
-                if (submissionTime.isAfter(constraints.getContestEndTime()))
-                    isUpsolving = true;
-            }
-            String source = extractSource(solution);
+    public SubmissionResponseDto submitSolution(Integer problemId, Integer contestId, Integer userId, SubmissionCreateDto solution) {
+        LocalDateTime submissionTime = LocalDateTime.now();
+        ProblemConstrainsResponseDto constraints = problemServiceClient.getProblemConstraints(problemId, contestId);
 
-            Submission submission = Submission.builder()
-                    .userId(userId)
-                    .problemId(problemId)
-                    .contestId(contestId)
-                    .time(submissionTime)
-                    .source(source)
-                    .programmingLanguage(solution.getLanguage())
-                    .status(Status.IN_QUEUE)
-                    .isUpsolving(isUpsolving).build();
+        boolean isUpsolving = contestId != null && submissionTime.isAfter(constraints.contestEndTime());
+        String source = extractSource(solution);
 
-            submission = submissionRepository.save(submission);
+        Submission submission = Submission.builder()
+                .userId(userId)
+                .problemId(problemId)
+                .contestId(contestId)
+                .time(submissionTime)
+                .source(source)
+                .programmingLanguage(solution.language())
+                .status(Status.IN_QUEUE)
+                .isUpsolving(isUpsolving).build();
 
-            SolutionSubmittedEvent event = submissionMapper.toSolutionSubmittedEvent(submission);
-            event.setCompilationTimeLimit(constraints.getCompileTimeLimit());
-            event.setTimeLimit(constraints.getTimeLimit());
-            event.setMemoryLimit(constraints.getMemoryLimit());
-            event.setContestId(contestId);
+        submission = submissionRepository.save(submission);
 
-            outboxEventService.save(solutionSubmittedTopicName, event);
+        SolutionSubmittedEvent event = submissionMapper.toSolutionSubmittedEvent(submission);
+        event.setContestId(contestId);
+        event.setCompilationTimeLimit(constraints.compileTimeLimit());
+        event.setTimeLimit(constraints.timeLimit());
+        event.setMemoryLimit(constraints.memoryLimit());
 
-            return submission.getId();
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private String extractSource(CreateSubmissionDto solution) throws IOException {
-        boolean hasSourceFile = solution.getSourceFile() != null;
-        boolean hasSourceCode = solution.getSourceCode() != null && !solution.getSourceCode().isBlank();
-        if (!hasSourceFile && !hasSourceCode)
-            throw new ValidationException("Source code was not provided");
-        if (hasSourceFile) {
-            return new String(solution.getSourceFile().getBytes());
-        }
-        return solution.getSourceCode();
+        outboxEventService.save(solutionSubmittedTopicName, event);
+        return submissionMapper.toSubmissionResponseDto(submission);
     }
 
 
+    public SubmissionResponseDto getSubmission(Long submissionId, Integer contestId) {
+        Submission submission = submissionRepository.findByIdAndContestId(submissionId, contestId)
+                .orElseThrow(() -> new ResourceNotFoundException("Submission not found"));
+        SubmissionResponseDto response = submissionMapper.toSubmissionResponseDto(submission);
+        wrapWithJudgingProgress(response);
+        return response;
+    }
+
+
+    public SubmissionDetailsResponseDto getSubmissionDetails(Long submissionId, Integer contestId, Integer userId) {
+        Submission submission = submissionRepository.findByIdAndContestId(submissionId, contestId)
+                .orElseThrow(() -> new ResourceNotFoundException("Submission not found"));
+        if (!Objects.equals(userId, submission.getUserId()))
+            throw new UnauthorizedAccessException("You can't get access to someone else's submission details");
+
+        SubmissionDetailsResponseDto detailsResponse = submissionMapper.toSubmissionDetailsResponseDto(submission);
+        if (detailsResponse.getStatus() == Status.IN_QUEUE)
+            detailsResponse.setTestNum(submissionProgressCacheService.getCachedTestNum(submission.getId()).orElse(null));
+        if (detailsResponse.getTestNum() != null) {
+            detailsResponse.setStatus(Status.TESTING);
+        }
+        return detailsResponse;
+    }
+
+
+    public PageResponseDto<SubmissionResponseDto> getSubmissions(Integer contestId, Integer problemId, Integer userId, Status status, Integer page) {
+        Page<SubmissionResponseDto> pageResponse = submissionRepository
+                .findAllFiltered(contestId, problemId, userId, status, PageRequest.of(page - 1, PAGE_SIZE))
+                .map(submission -> {
+                    SubmissionResponseDto responseDto = submissionMapper.toSubmissionResponseDto(submission);
+                    wrapWithJudgingProgress(responseDto);
+                    return responseDto;
+                });
+        return PageResponseDto.from(pageResponse);
+    }
+
+
     @Transactional
-    public void processJudgedSolution(SubmissionJudgingProgressEvent ev) {
+    public void processJudgedSolution(SolutionJudgedEvent ev) {
         Submission submission = submissionRepository.findById(ev.getSubmissionId()).
                 orElseThrow(() -> new ResourceNotFoundException("Can't process event"));
 
@@ -124,27 +144,27 @@ public class SubmissionService {
     }
 
 
-    public SubmissionDetailsResponseDto getSubmissionDetails(Long submissionId, Integer contestId, Integer userId) {
-        var submission = submissionRepository.findByIdAndContestId(submissionId, contestId)
-                .orElseThrow(() -> new ResourceNotFoundException("No submission found"));
-
-        if (contestId != null && userId != submission.getUserId())
-            throw new UnauthorizedAccessException("You can't get access to someone else's contest submission details");
-        return submissionMapper.toSubmissionDetailsResponseDto(submission);
-    }
-
-
-    // без транзакции
-    public Page<SubmissionResponseDto> getSubmissions(Integer contestId, Integer problemId, Integer userId, Status status, ProgrammingLanguage language, Integer page) {
-        return submissionRepository.findFiltered(contestId, problemId, userId, status, language, PageRequest.of(page - 1, PAGE_SIZE))
-                .map(this::wrapWithJudgingProgressTestNum);
-    }
-
-    private SubmissionResponseDto wrapWithJudgingProgressTestNum(Submission submission) {
-        SubmissionResponseDto response = submissionMapper.toSubmissionResponseDto(submission);
+    private void wrapWithJudgingProgress(SubmissionResponseDto response) {
         if (response.getStatus() == Status.IN_QUEUE)
-            response.setTestNum(submissionProgressCacheService.getCachedTestNum(submission.getId()).orElse(null));
-        return response;
+            response.setTestNum(submissionProgressCacheService.getCachedTestNum(response.getId()).orElse(null));
+        if (response.getTestNum() != null) {
+            response.setStatus(Status.TESTING);
+        }
+    }
+
+    private String extractSource(SubmissionCreateDto solution) {
+        try {
+            boolean hasSourceFile = solution.sourceFile() != null;
+            boolean hasSourceCode = solution.sourceCode() != null && !solution.sourceCode().isBlank();
+            if (!hasSourceFile && !hasSourceCode)
+                throw new BadRequestException("Source code was not provided");
+            if (hasSourceFile) {
+                return new String(solution.sourceFile().getBytes());
+            }
+            return solution.sourceCode();
+        } catch (IOException ex) {
+            throw new RuntimeException("Error while extracting source code");
+        }
     }
 
 }

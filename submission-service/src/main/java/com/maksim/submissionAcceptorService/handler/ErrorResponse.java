@@ -1,4 +1,4 @@
-package com.maksim.submissionAcceptorService.exception;
+package com.maksim.submissionAcceptorService.handler;
 
 
 import io.swagger.v3.oas.annotations.media.Schema;

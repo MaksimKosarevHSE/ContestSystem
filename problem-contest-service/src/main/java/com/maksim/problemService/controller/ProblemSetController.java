@@ -2,6 +2,7 @@ package com.maksim.problemService.controller;
 
 
 import com.maksim.problemService.dto.PageResponseDto;
+import com.maksim.problemService.dto.problem.ProblemConstrainsResponseDto;
 import com.maksim.problemService.dto.problem.ProblemCreateDto;
 import com.maksim.problemService.dto.problem.ProblemResponseDto;
 import com.maksim.problemService.dto.problem.ProblemSignatureResponseDto;
@@ -144,4 +145,19 @@ public class ProblemSetController {
         return ResponseEntity.noContent().build();
     }
 
+
+    @GetMapping("/problem/{problemId}/constraints")
+    @Operation(summary = "Get problem's constraints")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Problem's constraints",
+                    content = @Content(schema = @Schema(implementation = ProblemConstrainsResponseDto.class))),
+            @ApiResponse(responseCode = "404",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "500",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+
+    public ResponseEntity<ProblemConstrainsResponseDto> getProblemConstraints(@PathVariable Integer problemId) {
+        return ResponseEntity.ok(problemService.getProblemConstraints(null, problemId));
+    }
 }

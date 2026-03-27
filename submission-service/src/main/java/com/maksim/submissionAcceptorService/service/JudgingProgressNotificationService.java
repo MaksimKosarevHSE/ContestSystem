@@ -1,6 +1,6 @@
 package com.maksim.submissionAcceptorService.service;
 
-import com.maksim.submissionAcceptorService.kafka.event.SubmissionJudgingProgressEvent;
+import com.maksim.submissionAcceptorService.event.SolutionJudgedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Async;
@@ -12,7 +12,7 @@ public class JudgingProgressNotificationService {
     private final SimpMessagingTemplate messagingTemplate;
 
     @Async
-    public void notifyProgressAsync(SubmissionJudgingProgressEvent event) {
+    public void notifyProgressAsync(SolutionJudgedEvent event) {
         try {
             var destination = "/topic/submissions/" + event.getSubmissionId();
             messagingTemplate.convertAndSend(destination, event);

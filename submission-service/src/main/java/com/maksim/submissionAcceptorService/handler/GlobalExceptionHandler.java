@@ -1,5 +1,9 @@
-package com.maksim.submissionAcceptorService.exception;
+package com.maksim.submissionAcceptorService.handler;
 
+import com.maksim.submissionAcceptorService.exception.ConflictException;
+import com.maksim.submissionAcceptorService.exception.ResourceNotFoundException;
+import com.maksim.submissionAcceptorService.exception.UnauthorizedAccessException;
+import com.maksim.submissionAcceptorService.exception.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -10,7 +14,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(UnauthorizedAccessException.class)
-    public ResponseEntity<ErrorResponse> handleUnauthorize(UnauthorizedAccessException ex){
+    public ResponseEntity<ErrorResponse> handleUnauthorize(UnauthorizedAccessException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(new ErrorResponse(ex.getMessage()));
     }
@@ -29,8 +33,8 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(ex.getMessage()));
     }
 
-    @ExceptionHandler(com.maksim.submissionAcceptorService.exception.ValidationException.class)
-    public ResponseEntity<ErrorResponse> handleValidation(ValidationException ex) {
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ErrorResponse> handleValidation(BadRequestException ex) {
         return ResponseEntity.badRequest()
                 .body(new ErrorResponse(ex.getMessage()));
     }
@@ -44,11 +48,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneric(Exception ex) {
-        // временно
-        System.out.println(ex.getMessage());
-        throw new RuntimeException(ex);
-//        return ResponseEntity.status(500).body(new ErrorResponse(ex.getMessage()));
-//        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-//                .body(new ErrorResponse("Внутренняя ошибка сервера"));
+        ex.printStackTrace();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResponse("Server error"));
     }
 }

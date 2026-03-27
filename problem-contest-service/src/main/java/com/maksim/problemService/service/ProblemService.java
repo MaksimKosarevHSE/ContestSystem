@@ -4,11 +4,14 @@ package com.maksim.problemService.service;
 import com.maksim.problemService.client.JudgingServiceClient;
 import com.maksim.problemService.dto.PageResponseDto;
 import com.maksim.problemService.dto.mapper.ProblemMapper;
+import com.maksim.problemService.dto.problem.ProblemConstrainsResponseDto;
 import com.maksim.problemService.dto.problem.ProblemCreateDto;
 import com.maksim.problemService.dto.problem.ProblemResponseDto;
 import com.maksim.problemService.dto.problem.ProblemSignatureResponseDto;
 import com.maksim.problemService.dto.problem.ProblemUpdateDto;
 import com.maksim.problemService.dto.problem.SendTestCasesToJudgeServiceDto;
+import com.maksim.problemService.entity.Contest;
+import com.maksim.problemService.entity.associative.ContestProblem;
 import com.maksim.problemService.exception.ResourceNotFoundException;
 import com.maksim.problemService.exception.UnauthorizedAccessException;
 import com.maksim.problemService.exception.BadRequestException;
@@ -98,6 +101,19 @@ public class ProblemService {
         Problem problem = problemRepository.findByCreatorIdAndId(userId, problemId)
                 .orElseThrow(() -> new ResourceNotFoundException("Problem not found"));
         return problemMapper.toResponseDto(problem);
+    }
+
+    public ProblemConstrainsResponseDto getProblemConstraints(Integer contestId, Integer problemId) {
+        if (contestId == null) {
+            Problem problem = problemRepository.findByIdAndIsPublicTrue(problemId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Problem not found"));
+            return problemMapper.toProblemConstraintsDto(problem);
+        }
+        ContestProblem contestProblem = contestProblemRepository.findByContestIdAndProblemId(contestId, problemId)
+                .orElseThrow(() -> new ResourceNotFoundException("Problem in the contest found"));
+        ProblemConstrainsResponseDto response = problemMapper.toProblemConstraintsDto(contestProblem.getProblem());
+        response.setContestId(contestProblem.getContest().getId());
+        return response;
     }
 }
 

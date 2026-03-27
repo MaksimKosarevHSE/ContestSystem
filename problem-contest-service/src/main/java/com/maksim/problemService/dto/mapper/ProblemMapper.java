@@ -1,5 +1,6 @@
 package com.maksim.problemService.dto.mapper;
 
+import com.maksim.problemService.dto.problem.ProblemConstrainsResponseDto;
 import com.maksim.problemService.dto.problem.ProblemCreateDto;
 import com.maksim.problemService.dto.problem.ProblemResponseDto;
 import com.maksim.problemService.dto.problem.ProblemSignatureResponseDto;
@@ -23,4 +24,7 @@ public interface ProblemMapper {
     Problem toEntity(ProblemCreateDto dto);
 
     void updateFromPatch(@MappingTarget Problem problem, ProblemUpdateDto dto);
+
+    @Mapping(target = "contestId", ignore = true)
+    ProblemConstrainsResponseDto toProblemConstraintsDto(Problem problem);
 }

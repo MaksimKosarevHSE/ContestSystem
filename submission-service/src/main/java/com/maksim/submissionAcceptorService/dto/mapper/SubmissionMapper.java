@@ -1,10 +1,10 @@
 package com.maksim.submissionAcceptorService.dto.mapper;
 
-import com.maksim.submissionAcceptorService.dto.SubmissionDetailsResponseDto;
-import com.maksim.submissionAcceptorService.dto.SubmissionResponseDto;
+import com.maksim.submissionAcceptorService.dto.submission.SubmissionDetailsResponseDto;
+import com.maksim.submissionAcceptorService.dto.submission.SubmissionResponseDto;
 import com.maksim.submissionAcceptorService.entity.Submission;
-import com.maksim.submissionAcceptorService.kafka.event.SolutionSubmittedEvent;
-import com.maksim.submissionAcceptorService.kafka.event.StandingsUpdateEvent;
+import com.maksim.submissionAcceptorService.event.SolutionSubmittedEvent;
+import com.maksim.submissionAcceptorService.event.StandingsUpdateEvent;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;

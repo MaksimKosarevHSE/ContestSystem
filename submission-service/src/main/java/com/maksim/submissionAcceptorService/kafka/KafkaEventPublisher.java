@@ -1,11 +1,12 @@
 package com.maksim.submissionAcceptorService.kafka;
 
 import com.maksim.submissionAcceptorService.entity.OutboxEvent;
-import com.maksim.submissionAcceptorService.kafka.event.SolutionSubmittedEvent;
+import com.maksim.submissionAcceptorService.event.SolutionSubmittedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -18,7 +19,7 @@ import tools.jackson.databind.ObjectMapper;
 
 
 @Slf4j
-@Service
+@Component
 @RequiredArgsConstructor
 public class KafkaEventPublisher {
 
