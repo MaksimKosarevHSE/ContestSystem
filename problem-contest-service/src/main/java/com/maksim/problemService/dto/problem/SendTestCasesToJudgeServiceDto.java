@@ -15,10 +15,10 @@ import java.util.stream.Stream;
 @ToString
 @NoArgsConstructor
 public class SendTestCasesToJudgeServiceDto {
-    private int problemId;
+    private Integer problemId;
     private List<byte[]> testFilesContent;
     private List<String> testFilesNames;
-    private int countOfTestCases;
+    private Integer countOfTestCases;
     private CheckerType checkerType;
     private ProgrammingLanguage checkerLanguage;
     private byte[] checkerSourceCode; // optional

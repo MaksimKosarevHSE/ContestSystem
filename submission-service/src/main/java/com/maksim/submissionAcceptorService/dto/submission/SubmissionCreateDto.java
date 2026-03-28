@@ -15,7 +15,7 @@ public record SubmissionCreateDto(
         MultipartFile sourceFile,
 
         @NotNull
-        @Schema(description = "Programming language", example = "CPP")
+        @Schema(description = "Programming language", example = "Cpp")
         ProgrammingLanguage language
 ){
 

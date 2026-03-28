@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 public class OutboxScheduler {
     private final OutboxEventService outboxEventService;
 
-    @Scheduled(fixedDelay = 2000)
+    @Scheduled(fixedDelay = 10000)
     public void run(){
         log.info("Outbox processing start");
         outboxEventService.publishEvents();

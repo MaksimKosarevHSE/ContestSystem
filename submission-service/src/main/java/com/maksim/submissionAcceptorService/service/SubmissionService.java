@@ -145,9 +145,8 @@ public class SubmissionService {
 
 
     private void wrapWithJudgingProgress(SubmissionResponseDto response) {
-        if (response.getStatus() == Status.IN_QUEUE)
+        if (response.getStatus() == Status.IN_QUEUE) {
             response.setTestNum(submissionProgressCacheService.getCachedTestNum(response.getId()).orElse(null));
-        if (response.getTestNum() != null) {
             response.setStatus(Status.TESTING);
         }
     }

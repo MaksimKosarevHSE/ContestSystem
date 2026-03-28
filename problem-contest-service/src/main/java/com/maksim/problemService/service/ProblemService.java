@@ -113,6 +113,9 @@ public class ProblemService {
                 .orElseThrow(() -> new ResourceNotFoundException("Problem in the contest found"));
         ProblemConstrainsResponseDto response = problemMapper.toProblemConstraintsDto(contestProblem.getProblem());
         response.setContestId(contestProblem.getContest().getId());
+        response.setContestEndTime(contestProblem.getContest().getEndTime());
+        response.setContestStartTime(contestProblem.getContest().getStartTime());
+
         return response;
     }
 }

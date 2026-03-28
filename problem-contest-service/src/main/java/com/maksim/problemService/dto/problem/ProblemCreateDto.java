@@ -52,16 +52,16 @@ public record ProblemCreateDto(
         @Max(value = 10, message = "Complexity must be greater than 0 and less than 11")
         Integer complexity,
 
-        @Schema(description = "Compile time limit for solutions")
-        @Positive @Max(value = 10)
+        @Schema(description = "Compile time limit in ms")
+        @Positive @Max(value = 10000)
         Double compileTimeLimit,
 
-        @Schema(description = "Time limit for solutions")
-        @Positive @Max(value = 10)
+        @Schema(description = "Time limit in ms")
+        @Positive @Max(value = 10000)
         Double timeLimit,
 
         @Schema(description = "Memory limit for solutions")
-        @Positive @Max(value = 2048)
+        @Positive @Max(value = 1048576)
         Double memoryLimit,
 
         @Schema(description = "Type of checker program")

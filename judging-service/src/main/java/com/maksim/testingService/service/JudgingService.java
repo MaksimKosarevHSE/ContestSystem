@@ -25,7 +25,9 @@ public class JudgingService {
 
     public void saveTests(SaveTestCasesDto dto) throws IOException, InterruptedException, JuryCompilationException {
         Path problemDir = Path.of(testDir).resolve(Path.of("problem_" + dto.getProblemId()));
+
         try {
+            Files.createDirectories(problemDir);
             for (int i = 0; i < dto.getCountOfTestCases() * 2; i++) {
                 Path filePath = Files.createFile(problemDir.resolve(dto.getTestFilesNames().get(i)));
                 Files.write(filePath, dto.getTestFilesContent().get(i));
@@ -56,6 +58,7 @@ public class JudgingService {
 
         } catch (IOException | InterruptedException | JuryCompilationException ex) {
             log.error("Exception occur while saving test files {}", ex.getMessage());
+            ex.printStackTrace();
             try {
                 Files.deleteIfExists(problemDir);
             } catch (IOException e) {

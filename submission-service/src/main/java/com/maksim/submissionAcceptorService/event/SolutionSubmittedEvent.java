@@ -6,6 +6,8 @@ import lombok.*;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class SolutionSubmittedEvent {
     private Integer problemId;
     private Integer contestId;
