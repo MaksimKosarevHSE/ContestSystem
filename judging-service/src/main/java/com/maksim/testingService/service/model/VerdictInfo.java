@@ -1,7 +1,6 @@
 package com.maksim.testingService.service.model;
 
 import com.maksim.testingService.enums.Status;
-import jdk.jfr.DataAmount;
 import lombok.*;
 
 
@@ -10,7 +9,7 @@ import lombok.*;
 public class VerdictInfo {
     private Status status;
     private Integer executionTime;
-    private Integer usedMemory;
+    private Integer memory;
     private Integer testNum;
     private String checkerMessage;
 }

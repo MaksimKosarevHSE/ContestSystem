@@ -1,7 +1,7 @@
 package com.maksim.testingService.service;
 
 
-import com.maksim.testingService.dto.SaveTestCasesDto;
+import com.maksim.testingService.dto.SaveTestCasesRequestDto;
 import com.maksim.testingService.enums.CheckerType;
 import com.maksim.testingService.exception.JuryCompilationException;
 import com.maksim.testingService.service.model.TestCasesMetadata;
@@ -18,29 +18,30 @@ import java.util.concurrent.TimeUnit;
 @Service
 @Slf4j
 public class JudgingService {
+
     @Value("${judging.tests.dir}")
     private String testDir;
 
-    private final int JURY_COMPILATION_TIME_LIMIT = 10000;
+    private final Integer JURY_COMPILATION_TIME_LIMIT = 10000;
 
-    public void saveTests(SaveTestCasesDto dto) throws IOException, InterruptedException, JuryCompilationException {
-        Path problemDir = Path.of(testDir).resolve(Path.of("problem_" + dto.getProblemId()));
+    public void saveTests(SaveTestCasesRequestDto dto) {
+        Path problemDir = Path.of(testDir).resolve(Path.of("problem_" + dto.problemId()));
 
         try {
             Files.createDirectories(problemDir);
-            for (int i = 0; i < dto.getCountOfTestCases() * 2; i++) {
-                Path filePath = Files.createFile(problemDir.resolve(dto.getTestFilesNames().get(i)));
-                Files.write(filePath, dto.getTestFilesContent().get(i));
+            for (int i = 0; i < dto.countOfTestCases() * 2; i++) {
+                Path filePath = Files.createFile(problemDir.resolve(dto.testFilesNames().get(i)));
+                Files.write(filePath, dto.testFilesContent().get(i));
             }
-            var metaData = TestCasesMetadata.from(dto);
+            TestCasesMetadata metaData = TestCasesMetadata.from(dto);
 
-            if (dto.getCheckerType() == CheckerType.CUSTOM_CHECKER) {
-                Path checkerFile = Files.createFile(problemDir.resolve("checker" + dto.getCheckerLanguage().sourceSuffix));
-                metaData.setCheckerFileName("checker" + dto.getCheckerLanguage().compiledSuffix);
-                Files.write(checkerFile, dto.getCheckerSourceCode());
-                if (dto.getCheckerLanguage().needCompilation) {
+            if (dto.checkerType() == CheckerType.CUSTOM_CHECKER) {
+                Path checkerFile = Files.createFile(problemDir.resolve("checker" + dto.checkerLanguage().sourceSuffix));
+                metaData.setCheckerFileName("checker" + dto.checkerLanguage().compiledSuffix);
+                Files.write(checkerFile, dto.checkerSourceCode());
+                if (dto.checkerLanguage().needCompilation) {
                     ProcessBuilder builder = new ProcessBuilder();
-                    builder.command(dto.getCheckerLanguage().getCompileCommand(checkerFile));
+                    builder.command(dto.checkerLanguage().getCompileCommand(checkerFile));
                     Process process = builder.start();
                     boolean success = process.waitFor(JURY_COMPILATION_TIME_LIMIT, TimeUnit.SECONDS);
                     if (!success)
@@ -58,13 +59,11 @@ public class JudgingService {
 
         } catch (IOException | InterruptedException | JuryCompilationException ex) {
             log.error("Exception occur while saving test files {}", ex.getMessage());
-            ex.printStackTrace();
             try {
                 Files.deleteIfExists(problemDir);
-            } catch (IOException e) {
-                log.error("Can not delete useless files");
+            } catch (IOException ignored) {
             }
-            throw ex;
+            throw new RuntimeException(ex);
         }
     }
 }

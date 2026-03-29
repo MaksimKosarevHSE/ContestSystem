@@ -13,7 +13,7 @@ import lombok.Setter;
 public class ProcessedEvent {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     @Column(name = "message_id")
     private String messageId;

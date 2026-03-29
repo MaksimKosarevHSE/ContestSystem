@@ -44,8 +44,8 @@ public class AuthFilter implements GlobalFilter, Ordered {
         return validateToken(token)
                 .flatMap(response -> {
                     ServerHttpRequest mutatedRequest = request.mutate()
-                            .header("X-User-Id", response.getId().toString())
-                            .header("X-User-Handle", response.getHandle())
+                            .header("X-User-Id", response.id().toString())
+                            .header("X-User-Handle", response.handle())
                             .build();
                     ServerWebExchange mutatedExchange = exchange.mutate()
                             .request(mutatedRequest)

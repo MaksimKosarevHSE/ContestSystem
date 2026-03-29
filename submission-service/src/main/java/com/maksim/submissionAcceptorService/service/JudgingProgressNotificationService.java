@@ -2,11 +2,14 @@ package com.maksim.submissionAcceptorService.service;
 
 import com.maksim.submissionAcceptorService.event.SolutionJudgedEvent;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-@Service
+@Component
+@Slf4j
 @RequiredArgsConstructor
 public class JudgingProgressNotificationService {
     private final SimpMessagingTemplate messagingTemplate;
@@ -14,10 +17,10 @@ public class JudgingProgressNotificationService {
     @Async
     public void notifyProgressAsync(SolutionJudgedEvent event) {
         try {
-            var destination = "/topic/submissions/" + event.getSubmissionId();
+            String destination = "/topic/submissions/" + event.getSubmissionId();
             messagingTemplate.convertAndSend(destination, event);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error sending the message: {}", e.getMessage());
         }
     }
 }
