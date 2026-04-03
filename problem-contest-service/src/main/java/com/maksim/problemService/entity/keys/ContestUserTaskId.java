@@ -13,8 +13,10 @@ import lombok.NoArgsConstructor;
 public class ContestUserTaskId {
     @Column(name = "contest_id")
     private int contestId;
+
     @Column(name = "user_id")
     private int userId;
+
     @Column(name = "task_id")
     private int taskId;
 }

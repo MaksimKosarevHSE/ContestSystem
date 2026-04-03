@@ -17,12 +17,12 @@ public record CreateContestDto(
         @Schema(description = "Публичный ли контест", example = "true")
         Boolean isPublic,
 
-        @Schema(description = "Время начала", example = "2025-04-01T10:00:00")
+        @Schema(description = "Время начала", example = "2027-04-01T10:00:00Z")
         @NotNull(message = "Время начала обязательно")
         @Future(message = "Время начала должно быть в будущем")
         Instant startTime,
 
-        @Schema(description = "Время окончания", example = "2025-04-01T12:00:00")
+        @Schema(description = "Время окончания", example = "2028-04-01T12:00:00Z")
         @NotNull(message = "Время окончания обязательно")
         @Future(message = "Время окончания должно быть в будущем")
         Instant endTime,

@@ -24,6 +24,7 @@ public class ContestProblem {
     @JoinColumn(name = "problem_id")
     private Problem problem;
 
+    @Column(name = "score")
     private int score; // баллов за задачу
 
     @Override

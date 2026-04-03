@@ -17,6 +17,7 @@ import java.util.UUID;
 @Table(name = "processed_events")
 public class ProcessedEvent {
     @Id
+    @Column(name = "event_id")
     private UUID eventId;
 
     public ProcessedEvent(UUID eventId) {

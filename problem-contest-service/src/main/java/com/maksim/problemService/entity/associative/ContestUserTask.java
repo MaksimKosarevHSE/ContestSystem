@@ -30,12 +30,16 @@ public class ContestUserTask {
     @JoinColumn(name = "task_id")
     private Problem problem;
 
-    private boolean solved;
+    @Column(name = "solved")
+    private Boolean solved;
 
-    private int attempts;
+    @Column(name = "attempts")
+    private Integer attempts;
 
-    private int score;
+    @Column(name = "score")
+    private Integer score;
 
+    @Column(name = "solution_time")
     private Instant solutionTime;
 
     public ContestUserTask(ContestUserTaskId id) {

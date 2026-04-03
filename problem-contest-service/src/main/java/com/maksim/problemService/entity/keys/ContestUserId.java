@@ -14,6 +14,7 @@ import java.util.Objects;
 public class ContestUserId implements Serializable {
     @Column(name = "user_id")
     private Integer userId;
+
     @Column(name = "contest_id")
     private Integer contestId;
 
