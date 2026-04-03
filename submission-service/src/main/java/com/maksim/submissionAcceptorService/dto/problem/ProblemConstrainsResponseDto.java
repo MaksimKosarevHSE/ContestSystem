@@ -1,6 +1,6 @@
 package com.maksim.submissionAcceptorService.dto.problem;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record ProblemConstrainsResponseDto(
         Integer id,
@@ -8,7 +8,7 @@ public record ProblemConstrainsResponseDto(
         Integer timeLimit,
         Integer memoryLimit,
         Integer contestId,
-        LocalDateTime contestStartTime,
-        LocalDateTime contestEndTime
+        Instant contestStartTime,
+        Instant contestEndTime
 ) {
 }

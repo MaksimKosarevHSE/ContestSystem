@@ -26,7 +26,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
+
+import java.time.Instant;
 import java.util.Objects;
 
 @Slf4j
@@ -54,7 +55,7 @@ public class SubmissionService {
 
     @Transactional
     public SubmissionResponseDto submitSolution(Integer problemId, Integer contestId, Integer userId, SubmissionCreateDto solution) {
-        LocalDateTime submissionTime = LocalDateTime.now();
+        Instant submissionTime = Instant.now();
         ProblemConstrainsResponseDto constraints = problemServiceClient.getProblemConstraints(problemId, contestId);
 
         boolean isUpsolving = contestId != null && submissionTime.isAfter(constraints.contestEndTime());
@@ -73,10 +74,7 @@ public class SubmissionService {
         submission = submissionRepository.save(submission);
 
         SolutionSubmittedEvent event = submissionMapper.toSolutionSubmittedEvent(submission);
-        event.setContestId(contestId);
-        event.setCompilationTimeLimit(constraints.compileTimeLimit());
-        event.setTimeLimit(constraints.timeLimit());
-        event.setMemoryLimit(constraints.memoryLimit());
+        submissionMapper.updateSolutionEventFromConstraints(event,constraints);
 
         outboxEventService.save(solutionSubmittedTopicName, event);
         return submissionMapper.toSubmissionResponseDto(submission);
@@ -129,12 +127,7 @@ public class SubmissionService {
             return; // идемпотентность
         }
 
-        submission.setStatus(ev.getStatus());
-        submission.setExecutionTime(ev.getExecutionTime());
-        submission.setTestNum(ev.getTestNum());
-        submission.setUsedMemory(ev.getMemory());
-        submission.setCheckerMessage(ev.getCheckerMessage());
-
+        submissionMapper.updateFromEvent(submission,ev);
         submissionRepository.save(submission);
 
         if (submission.getContestId() != null && !submission.getIsUpsolving()) {

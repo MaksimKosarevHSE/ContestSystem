@@ -5,6 +5,7 @@ import com.maksim.submissionAcceptorService.enums.Status;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 @Data
 @Schema(description = "Full submission information")
@@ -25,7 +26,7 @@ public class SubmissionDetailsResponseDto{
         private Boolean isUpsolving;
 
         @Schema(description = "Submission time", example = "2026-01-01T00:00:00")
-        private LocalDateTime time;
+        private Instant time;
 
         @Schema(description = "Submission source code", example = "prInteger('Hello world!')")
         private String source;

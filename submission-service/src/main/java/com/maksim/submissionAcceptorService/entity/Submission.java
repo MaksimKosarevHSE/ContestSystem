@@ -7,7 +7,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Type;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "submissions")
@@ -33,7 +33,7 @@ public class Submission {
     private Boolean isUpsolving;
 
     @Column(name = "time")
-    private LocalDateTime time;
+    private Instant time;
 
     @Column(name = "source")
     private String source;
