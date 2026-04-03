@@ -23,7 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -99,7 +99,7 @@ public class StandingsService {
     public PageResponseDto<UserProgressResponseDto> getLeaderboard(int contestId, int page, int pageSize) {
         Contest contest = contestRepository.findById(contestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Contest not found"));
-        if (contest.getStartTime().isAfter(LocalDateTime.now())) {
+        if (contest.getStartTime().isAfter(Instant.now())) {
             throw new AccessDeniedException("The contest has not started");
         }
         ensureCacheBuilt(contestId);

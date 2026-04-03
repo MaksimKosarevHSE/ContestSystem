@@ -8,7 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+
 
 @Entity
 @Table(name = "contest_user_task")
@@ -35,7 +36,7 @@ public class ContestUserTask {
 
     private int score;
 
-    private LocalDateTime solutionTime;
+    private Instant solutionTime;
 
     public ContestUserTask(ContestUserTaskId id) {
         this.id = id;

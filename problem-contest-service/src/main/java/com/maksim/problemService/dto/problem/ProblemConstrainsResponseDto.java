@@ -2,7 +2,7 @@ package com.maksim.problemService.dto.problem;
 
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Data
 public class ProblemConstrainsResponseDto {
@@ -11,6 +11,6 @@ public class ProblemConstrainsResponseDto {
     private Integer timeLimit;
     private Integer memoryLimit;
     private Integer contestId;
-    private LocalDateTime contestStartTime;
-    private LocalDateTime contestEndTime;
+    private Instant contestStartTime;
+    private Instant contestEndTime;
 }

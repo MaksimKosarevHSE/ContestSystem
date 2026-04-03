@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,9 +25,9 @@ public class Contest {
     @Column(name = "author_id")
     private Integer authorId;
     @Column(name = "start_time")
-    private LocalDateTime startTime;
+    private Instant startTime;
     @Column(name = "end_time")
-    private LocalDateTime endTime;
+    private Instant endTime;
     @OneToMany(mappedBy = "contest", cascade = CascadeType.ALL,  orphanRemoval = true)
     private List<ContestProblem> problems = new ArrayList<>();
 

@@ -18,8 +18,7 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long> {
             "WHERE (:userId IS NULL OR s.userId = :userId) " +
             "AND (:problemId IS NULL OR s.problemId = :problemId) " +
             "AND (:contestId IS NULL OR s.contestId = :contestId) " +
-            "AND (:status IS NULL OR s.status = :status)" +
-            "ORDER BY s.id DESC")
+            "AND (:status IS NULL OR s.status = :status)")
     Page<Submission> findAllFiltered(@Param("contestId") Integer contestId,
                                      @Param("problemId") Integer problemId,
                                      @Param("userId") Integer userId,

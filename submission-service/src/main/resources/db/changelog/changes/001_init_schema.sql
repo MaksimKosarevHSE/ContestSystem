@@ -14,6 +14,10 @@ CREATE TABLE IF NOT EXISTS submissions (
    checker_message TEXT
 );
 
+CREATE INDEX idx_submissions_user_id ON submissions(user_id);
+CREATE INDEX idx_submissions_contest_id ON submissions(contest_id);
+
+
 CREATE TABLE IF NOT EXISTS outbox_event (
     id UUID PRIMARY KEY,
     event_id UUID,

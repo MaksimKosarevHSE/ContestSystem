@@ -3,7 +3,7 @@ package com.maksim.problemService.dto.contest;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 
@@ -20,12 +20,12 @@ public record CreateContestDto(
         @Schema(description = "Время начала", example = "2025-04-01T10:00:00")
         @NotNull(message = "Время начала обязательно")
         @Future(message = "Время начала должно быть в будущем")
-        LocalDateTime startTime,
+        Instant startTime,
 
         @Schema(description = "Время окончания", example = "2025-04-01T12:00:00")
         @NotNull(message = "Время окончания обязательно")
         @Future(message = "Время окончания должно быть в будущем")
-        LocalDateTime endTime,
+        Instant endTime,
 
         @Schema(description = "Список ID задач, включённых в контест")
         @NotEmpty(message = "Список задач не может быть пустым")

@@ -2,7 +2,7 @@ package com.maksim.problemService.dto.contest;
 
 import jakarta.validation.constraints.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 public record UpdateContestDto(
@@ -10,10 +10,10 @@ public record UpdateContestDto(
         String title,
 
         @Future
-        LocalDateTime startTime,
+        Instant startTime,
 
         @Future
-        LocalDateTime endTime,
+        Instant endTime,
 
         Boolean isPublic,
 

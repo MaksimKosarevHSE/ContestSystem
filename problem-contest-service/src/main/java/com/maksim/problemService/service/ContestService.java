@@ -27,7 +27,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -67,7 +67,7 @@ public class ContestService {
         if (contest.getAuthorId() != (int) userId) {
             throw new UnauthorizedAccessException("Only author can update contest");
         }
-        if (contest.getStartTime().isBefore(LocalDateTime.now())) {
+        if (contest.getStartTime().isBefore(Instant.now())) {
             throw new BadRequestException("Contest already started. You can't change it");
         }
         contestMapper.updateFromPatch(contest, dto);
@@ -97,7 +97,7 @@ public class ContestService {
 
         ContestResponseDto dto = contestMapper.toResponseDto(contest);
 
-        if (LocalDateTime.now().isAfter(contest.getStartTime())) {
+        if (Instant.now().isAfter(contest.getStartTime())) {
             dto.setProblems(getProblemSignatures(contest));
         }
         return dto;
@@ -118,7 +118,7 @@ public class ContestService {
     private PageResponseDto<ContestResponseDto> buildResponsePage(Page<Contest> contests) {
         Page<ContestResponseDto> response = contests.map(contest -> {
             ContestResponseDto dto = contestMapper.toResponseDto(contest);
-            if (LocalDateTime.now().isAfter(contest.getStartTime())) {
+            if (Instant.now().isAfter(contest.getStartTime())) {
                 dto.setProblems(getProblemSignatures(contest));
             }
             return dto;
@@ -130,7 +130,7 @@ public class ContestService {
     public ProblemResponseDto getProblem(Integer contestId, Integer problemId) {
         ContestProblem cp = contestProblemRepository.findByContestIdAndProblemId(contestId, problemId)
                 .orElseThrow(() -> new ResourceNotFoundException("Problem not found in contest"));
-        if (cp.getContest().getStartTime().isAfter(LocalDateTime.now())) {
+        if (cp.getContest().getStartTime().isAfter(Instant.now())) {
             throw new ConflictException("Contest has not started");
         }
         return problemMapper.toResponseDto(cp.getProblem());

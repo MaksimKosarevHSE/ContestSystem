@@ -11,9 +11,4 @@ import java.util.UUID;
 
 public interface OutboxEventRepository extends JpaRepository<OutboxEvent, UUID> {
 
-//    List<OutboxEvent> findAll();
-
-    @Modifying
-    @Query("DELETE FROM OutboxEvent e WHERE e.id IN :ids")
-    void deleteAllByIdIn(@Param("ids") List<UUID> ids);
 }
