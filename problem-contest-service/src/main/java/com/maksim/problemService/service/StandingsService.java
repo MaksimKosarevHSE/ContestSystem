@@ -57,7 +57,7 @@ public class StandingsService {
             return;
         }
         cut.incAttempts();
-
+        // test commit
         if (event.getStatus() == Status.OK) {
             cut.setSolved(true);
             int scoreForTask = 100;
