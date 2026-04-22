@@ -3,6 +3,7 @@ package com.maksim.problemService.event;
 import com.maksim.problemService.entity.ProcessedEvent;
 import com.maksim.problemService.repository.ProcessedEventRepository;
 import com.maksim.problemService.service.StandingsService;
+import com.maksim.problemService.service.StandingsServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;

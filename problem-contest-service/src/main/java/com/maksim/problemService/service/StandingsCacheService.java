@@ -2,128 +2,29 @@ package com.maksim.problemService.service;
 
 import com.maksim.problemService.dto.standings.TaskProgressResponseDto;
 import com.maksim.problemService.dto.standings.UserProgressResponseDto;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
-import org.springframework.stereotype.Service;
-import tools.jackson.databind.ObjectMapper;
 
-import java.time.Duration;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-@Slf4j
-@Service
-@RequiredArgsConstructor
-public class StandingsCacheService {
+public interface StandingsCacheService {
+    boolean existsLeaderboard(int contestId);
 
-    private static final String LEADERBOARD_PREFIX = "contest:leaderboard:";
+    void putLeaderboardScore(int contestId, int userId, int totalScore);
 
-    private static final String USER_DETAILS_PREFIX = "contest:details:";
+    Integer getUserRank(int contestId, int userId);
 
-    private static final Duration CACHE_TTL = Duration.ofHours(1);
+    Integer getUserScore(int contestId, int userId);
 
-    private final StringRedisTemplate redisTemplate;
+    Set<ZSetOperations.TypedTuple<String>> getLeaderboardRange(int contestId, long start, long end);
 
-    private final ObjectMapper objectMapper;
+    Long getLeaderboardTotalSize(int contestId);
 
-    private String leaderboardKey(int contestId) {
-        return LEADERBOARD_PREFIX + contestId;
-    }
+    void putUserTaskDetail(int contestId, int userId, int taskId, TaskProgressResponseDto taskDetail);
 
-    private String userDetailsKey(int contestId, int userId) {
-        return USER_DETAILS_PREFIX + contestId + ":user:" + userId;
-    }
+    Map<Integer, TaskProgressResponseDto> getUserTasksDetails(int contestId, int userId);
 
-    public boolean existsLeaderboard(int contestId) {
-        return redisTemplate.hasKey(leaderboardKey(contestId));
-    }
+    void rebuildFromDatabase(int contestId, List<UserProgressResponseDto> users);
 
-    public void putLeaderboardScore(int contestId, int userId, int totalScore) {
-        redisTemplate.opsForZSet().add(leaderboardKey(contestId), String.valueOf(userId), totalScore);
-    }
-
-    public Integer getUserRank(int contestId, int userId){
-        Long rank = redisTemplate.opsForZSet().reverseRank(leaderboardKey(contestId), String.valueOf(userId));
-        if (rank == null) {
-            return null;
-        }
-        return rank.intValue() + 1;
-    }
-
-    public Integer getUserScore(int contestId, int userId) {
-        Double score = redisTemplate.opsForZSet().score(leaderboardKey(contestId), String.valueOf(userId));
-        return score != null ? score.intValue() : null;
-    }
-
-    public Set<ZSetOperations.TypedTuple<String>> getLeaderboardRange(int contestId, long start, long end) {
-        return redisTemplate.opsForZSet().reverseRangeWithScores(leaderboardKey(contestId), start, end);
-    }
-
-    public Long getLeaderboardTotalSize(int contestId) {
-        return redisTemplate.opsForZSet().size(leaderboardKey(contestId));
-    }
-
-    public void putUserTaskDetail(int contestId, int userId, int taskId, TaskProgressResponseDto taskDetail) {
-        try {
-            String taskJson = objectMapper.writeValueAsString(taskDetail);
-            String key = userDetailsKey(contestId, userId);
-            redisTemplate.opsForHash().put(key, String.valueOf(taskId), taskJson);
-            redisTemplate.expire(key, CACHE_TTL);
-        } catch (Exception e) {
-            log.error("Serialization exception {}", e.getMessage());
-        }
-    }
-
-    public Map<Integer, TaskProgressResponseDto> getUserTasksDetails(int contestId, int userId) {
-        String key = userDetailsKey(contestId, userId);
-        Map<Object, Object> entries = redisTemplate.opsForHash().entries(key);
-        if (entries.isEmpty()) return Collections.emptyMap();
-
-        Map<Integer, TaskProgressResponseDto> result = new HashMap<>();
-        for (Map.Entry<Object, Object> entry : entries.entrySet()) {
-            try {
-                int taskId = Integer.parseInt(entry.getKey().toString());
-                TaskProgressResponseDto dto = objectMapper.readValue(entry.getValue().toString(), TaskProgressResponseDto.class);
-                result.put(taskId, dto);
-            } catch (Exception e) {
-                log.error("Deserialization exception {}", e.getMessage());
-            }
-        }
-        return result;
-    }
-
-    public void deleteLeaderboard(int contestId) {
-        redisTemplate.delete(leaderboardKey(contestId));
-    }
-
-
-    public void rebuildFromDatabase(int contestId, List<UserProgressResponseDto> users) {
-        String leaderboardKey = leaderboardKey(contestId);
-        deleteLeaderboard(contestId);
-
-        for (UserProgressResponseDto user : users) {
-
-            redisTemplate.opsForZSet().add(leaderboardKey, String.valueOf(user.userId()), user.score());
-            String userKey = userDetailsKey(contestId, user.userId());
-
-            Map<String, String> taskMap = user.taskProgress().stream()
-                    .collect(Collectors.toMap(
-                            t -> String.valueOf(t.taskId()),
-                            t -> {
-                                try {
-                                    return objectMapper.writeValueAsString(t);
-                                } catch (Exception e) {
-                                    log.error("Serialization exception {}", e.getMessage());
-                                    throw new RuntimeException(e);
-                                }
-                            }
-                    ));
-            if (!taskMap.isEmpty()) {
-                redisTemplate.opsForHash().putAll(userKey, taskMap);
-                redisTemplate.expire(userKey, CACHE_TTL);
-            }
-        }
-    }
 }

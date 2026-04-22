@@ -4,12 +4,10 @@ import com.maksim.submissionAcceptorService.dto.PageResponseDto;
 import com.maksim.submissionAcceptorService.dto.submission.SubmissionCreateDto;
 import com.maksim.submissionAcceptorService.dto.submission.SubmissionDetailsResponseDto;
 import com.maksim.submissionAcceptorService.dto.submission.SubmissionResponseDto;
-import com.maksim.submissionAcceptorService.enums.ProgrammingLanguage;
 import com.maksim.submissionAcceptorService.enums.Status;
 import com.maksim.submissionAcceptorService.handler.ErrorResponse;
 import com.maksim.submissionAcceptorService.service.SubmissionService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -19,7 +17,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 
