@@ -22,7 +22,7 @@ public record PageResponseDto<T>(
         );
     }
 
-    public static <T> PageResponseDto<T> emptyPage(Class<T> clazz) {
+    public static <T> PageResponseDto<T> emptyPage() {
         return new PageResponseDto<>(Collections.emptyList(), 0, 0, 0L, 0);
     }
 }

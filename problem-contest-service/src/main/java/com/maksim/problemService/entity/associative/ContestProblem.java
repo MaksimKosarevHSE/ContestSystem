@@ -2,7 +2,6 @@ package com.maksim.problemService.entity.associative;
 
 import com.maksim.problemService.entity.Contest;
 import com.maksim.problemService.entity.Problem;
-import com.maksim.problemService.entity.keys.ContestProblemId;
 import jakarta.persistence.*;
 import lombok.Data;
 

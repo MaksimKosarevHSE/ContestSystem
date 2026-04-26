@@ -20,15 +20,20 @@ public class Contest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Integer id;
+
     @Column(name = "title")
     private String title;
+
     @Column(name = "author_id")
     private Integer authorId;
+
     @Column(name = "start_time")
     private Instant startTime;
+
     @Column(name = "end_time")
     private Instant endTime;
-    @OneToMany(mappedBy = "contest", cascade = CascadeType.ALL,  orphanRemoval = true)
+
+    @OneToMany(mappedBy = "contest", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ContestProblem> problems = new ArrayList<>();
 
     public List<Problem> getProblemList() {

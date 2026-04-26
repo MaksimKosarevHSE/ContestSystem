@@ -60,27 +60,6 @@ public class Problem {
     @Column(name = "memory_limit")
     private Integer memoryLimit;
 
-    public Problem(Integer creatorId, String title, Boolean isPublic,
-                   String statement, String input,
-                   String output, String notes,
-                   List<String> sampleInput, List<String> sampleOutput,
-                   Integer complexity, Integer compileTimeLimit,
-                   Integer timeLimit, Integer memoryLimit) {
-        this.isPublic = isPublic;
-        this.creatorId = creatorId;
-        this.title = title;
-        this.statement = statement;
-        this.input = input;
-        this.output = output;
-        this.notes = notes;
-        this.sampleInput = sampleInput;
-        this.sampleOutput = sampleOutput;
-        this.complexity = complexity;
-        this.compileTimeLimit = compileTimeLimit;
-        this.timeLimit = timeLimit;
-        this.memoryLimit = memoryLimit;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;

@@ -14,9 +14,6 @@ public record CreateContestDto(
         @Size(max = 255, message = "Название не может превышать 255 символов")
         String title,
 
-        @Schema(description = "Публичный ли контест", example = "true")
-        Boolean isPublic,
-
         @Schema(description = "Время начала", example = "2027-04-01T10:00:00Z")
         @NotNull(message = "Время начала обязательно")
         @Future(message = "Время начала должно быть в будущем")

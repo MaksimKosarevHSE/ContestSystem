@@ -112,7 +112,7 @@ public class StandingsServiceImpl implements StandingsService {
         Long totalElements = cacheService.getLeaderboardTotalSize(contestId);
 
         if (leaders == null || leaders.isEmpty()) {
-            return PageResponseDto.emptyPage(UserProgressResponseDto.class);
+            return PageResponseDto.emptyPage();
         }
 
         List<UserProgressResponseDto> result = new ArrayList<>(leaders.size());
@@ -191,7 +191,6 @@ public class StandingsServiceImpl implements StandingsService {
 
 
     private ContestUser getContestUser(int contestId, int userId) {
-        System.out.println(contestId + " " + userId);
         return cuRepository.findById(new ContestUserId(userId, contestId)).
                 orElseThrow(() -> new ResourceNotFoundException("User not registered in this contest"));
     }
