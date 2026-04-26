@@ -12,7 +12,7 @@ import com.maksim.submissionAcceptorService.entity.Submission;
 import com.maksim.submissionAcceptorService.event.SolutionSubmittedEvent;
 import com.maksim.submissionAcceptorService.event.SolutionJudgedEvent;
 import com.maksim.submissionAcceptorService.exception.ResourceNotFoundException;
-import com.maksim.submissionAcceptorService.exception.UnauthorizedAccessException;
+import com.maksim.submissionAcceptorService.exception.ForbiddenException;
 import com.maksim.submissionAcceptorService.exception.BadRequestException;
 import com.maksim.submissionAcceptorService.repository.SubmissionRepository;
 import com.maksim.submissionAcceptorService.service.outbox.OutboxEventService;
@@ -32,7 +32,7 @@ import java.util.Objects;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class SubmissionServiceImpl implements SubmissionService{
+public class SubmissionServiceImpl implements SubmissionService {
 
     @Value("${solution.submitted.event.topic}")
     private String solutionSubmittedTopicName;
@@ -73,7 +73,7 @@ public class SubmissionServiceImpl implements SubmissionService{
         submission = submissionRepository.save(submission);
 
         SolutionSubmittedEvent event = submissionMapper.toSolutionSubmittedEvent(submission);
-        submissionMapper.updateSolutionEventFromConstraints(event,constraints);
+        submissionMapper.updateSolutionEventFromConstraints(event, constraints);
 
         outboxEventService.save(solutionSubmittedTopicName, event);
         return submissionMapper.toSubmissionResponseDto(submission);
@@ -93,13 +93,15 @@ public class SubmissionServiceImpl implements SubmissionService{
         Submission submission = submissionRepository.findByIdAndContestId(submissionId, contestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Submission not found"));
         if (!Objects.equals(userId, submission.getUserId()))
-            throw new UnauthorizedAccessException("You can't get access to someone else's submission details");
+            throw new ForbiddenException("You can't get access to someone else's submission details");
 
         SubmissionDetailsResponseDto detailsResponse = submissionMapper.toSubmissionDetailsResponseDto(submission);
-        if (detailsResponse.getStatus() == Status.IN_QUEUE)
-            detailsResponse.setTestNum(submissionProgressCacheService.getCachedTestNum(submission.getId()).orElse(null));
-        if (detailsResponse.getTestNum() != null) {
-            detailsResponse.setStatus(Status.TESTING);
+        if (detailsResponse.getStatus() == Status.IN_QUEUE) {
+            Integer testNum = submissionProgressCacheService.getCachedTestNum(submission.getId()).orElse(null);
+            if (testNum != null) {
+                detailsResponse.setTestNum(testNum);
+                detailsResponse.setStatus(Status.TESTING);
+            }
         }
         return detailsResponse;
     }
@@ -126,7 +128,7 @@ public class SubmissionServiceImpl implements SubmissionService{
             return; // идемпотентность
         }
 
-        submissionMapper.updateFromEvent(submission,ev);
+        submissionMapper.updateFromEvent(submission, ev);
         submissionRepository.save(submission);
 
         if (submission.getContestId() != null && !submission.getIsUpsolving()) {
@@ -138,7 +140,9 @@ public class SubmissionServiceImpl implements SubmissionService{
 
     private void wrapWithJudgingProgress(SubmissionResponseDto response) {
         if (response.getStatus() == Status.IN_QUEUE) {
-            response.setTestNum(submissionProgressCacheService.getCachedTestNum(response.getId()).orElse(null));
+            Integer testNum = submissionProgressCacheService.getCachedTestNum(response.getId()).orElse(null);
+            if (testNum == null) return;
+            response.setTestNum(testNum);
             response.setStatus(Status.TESTING);
         }
     }

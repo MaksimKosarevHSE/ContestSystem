@@ -25,10 +25,10 @@ public class SubmissionDetailsResponseDto{
         @Schema(description = "Is upsolving")
         private Boolean isUpsolving;
 
-        @Schema(description = "Submission time", example = "2026-01-01T00:00:00")
+        @Schema(description = "Submission time", example = "2026-01-01T00:00:00Z")
         private Instant time;
 
-        @Schema(description = "Submission source code", example = "prInteger('Hello world!')")
+        @Schema(description = "Submission source code", example = "print('Hello world!')")
         private String source;
 
         @Schema(description = "Programming language", example = "CPP")

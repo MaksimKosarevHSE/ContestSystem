@@ -37,7 +37,6 @@ public class OutboxEventService {
             kafkaEventPublisher.processOutboxEvent(outboxEvent);
             outboxEventRepository.delete(outboxEvent);
         } catch (Exception e){
-            e.printStackTrace();
             log.warn("Failed to process event {}", outboxEvent.getEventId());
         }
     }

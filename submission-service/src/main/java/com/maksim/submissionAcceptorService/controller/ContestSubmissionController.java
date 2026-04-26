@@ -31,7 +31,7 @@ public class ContestSubmissionController {
     @PostMapping(value = "/contest/{contestId}/problem/{problemId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Submit problem solution in contest")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Submission is accepted",
+            @ApiResponse(responseCode = "201", description = "Submission is accepted",
                     content = @Content(schema = @Schema(implementation = SubmissionResponseDto.class))),
             @ApiResponse(responseCode = "400",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
@@ -89,6 +89,8 @@ public class ContestSubmissionController {
                     content = @Content(schema = @Schema(implementation = SubmissionDetailsResponseDto.class))),
             @ApiResponse(responseCode = "400",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "403",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "500",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
@@ -98,4 +100,3 @@ public class ContestSubmissionController {
         return ResponseEntity.ok(submissionService.getSubmissionDetails(submissionId, contestId, userId));
     }
 }
-

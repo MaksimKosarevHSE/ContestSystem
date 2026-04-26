@@ -20,7 +20,7 @@ public class SubmissionResponseDto {
     @Schema(description = "Problem ID", example = "101")
     private Integer problemId;
 
-    @Schema(description = "Submission time", example = "2026-01-01T00:00:00")
+    @Schema(description = "Submission time", example = "2026-01-01T00:00:00Z")
     private Instant time;
 
     @Schema(description = "Programming language", example = "CPP")

@@ -2,7 +2,7 @@ package com.maksim.submissionAcceptorService.handler;
 
 import com.maksim.submissionAcceptorService.exception.ConflictException;
 import com.maksim.submissionAcceptorService.exception.ResourceNotFoundException;
-import com.maksim.submissionAcceptorService.exception.UnauthorizedAccessException;
+import com.maksim.submissionAcceptorService.exception.ForbiddenException;
 import com.maksim.submissionAcceptorService.exception.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(UnauthorizedAccessException.class)
-    public ResponseEntity<ErrorResponse> handleUnauthorize(UnauthorizedAccessException ex) {
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ErrorResponse> handleUnauthorize(ForbiddenException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(new ErrorResponse(ex.getMessage()));
     }

@@ -20,7 +20,7 @@ public class JudgingProgressNotificationService {
             String destination = "/topic/submissions/" + event.getSubmissionId();
             messagingTemplate.convertAndSend(destination, event);
         } catch (Exception e) {
-            log.error("Error sending the message: {}", e.getMessage());
+            log.error("Error while sending the message: {}", e.getMessage());
         }
     }
 }
