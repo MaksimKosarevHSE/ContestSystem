@@ -17,12 +17,13 @@ import org.springframework.stereotype.Component;
 public class SolutionJudgedConsumer {
 
     private final SubmissionService submissionService;
-
     private final JudgingProgressCacheService judgingProgressCacheService;
-
     private final JudgingProgressNotificationService judgingProgressNotificationService;
 
-    @KafkaListener(topics = "submission-jugding-progress-event-topic", containerFactory = "factory1")
+    @KafkaListener(
+            topics = "${solution.judged.event.topic}",
+            containerFactory = "solutionJudgedKafkaListenerContainerFactory"
+    )
     public void handle(@Payload SolutionJudgedEvent event) {
         if (event.getStatus() == Status.TESTING) {
             judgingProgressCacheService.cacheTestNumAsync(event.getSubmissionId(), event.getTestNum());

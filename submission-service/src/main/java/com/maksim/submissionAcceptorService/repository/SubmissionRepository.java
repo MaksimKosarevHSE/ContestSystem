@@ -12,7 +12,11 @@ import java.util.Optional;
 
 public interface SubmissionRepository extends JpaRepository<Submission, Long> {
 
-    Optional<Submission> findByIdAndContestId(Long id, Integer contestId);
+    @Query("SELECT s FROM Submission s WHERE s.id = :id AND s.contestId = :contestId")
+    Optional<Submission> findContestSubmissionById(@Param("id") Long id, @Param("contestId") Integer contestId);
+
+    @Query("SELECT s FROM Submission s WHERE s.id = :id AND s.contestId IS NULL")
+    Optional<Submission> findProblemSetSubmissionById(@Param("id") Long id);
 
     @Query("SELECT s FROM Submission s " +
             "WHERE (:userId IS NULL OR s.userId = :userId) " +

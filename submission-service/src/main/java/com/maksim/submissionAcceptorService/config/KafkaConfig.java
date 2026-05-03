@@ -19,8 +19,12 @@ import java.util.Map;
 
 @Configuration
 public class KafkaConfig {
+
     @Value("${solution.submitted.event.topic}")
     private String solutionSubmittedTopic;
+
+    @Value("${solution.judged.event.topic}")
+    private String solutionJudgedTopic;
 
     @Value("${standings.update.event.topic}")
     private String standingsUpdateTopic;
@@ -37,29 +41,37 @@ public class KafkaConfig {
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBootstrap);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         props.put(JacksonJsonDeserializer.TRUSTED_PACKAGES, "*");
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JacksonJsonDeserializer.class);
         props.put(JacksonJsonDeserializer.USE_TYPE_INFO_HEADERS, false);
-        return new DefaultKafkaConsumerFactory<>(props, new IntegerDeserializer(), new JacksonJsonDeserializer<>(SolutionJudgedEvent.class));
+        return new DefaultKafkaConsumerFactory<>(
+                props,
+                new IntegerDeserializer(),
+                new JacksonJsonDeserializer<>(SolutionJudgedEvent.class)
+        );
     }
 
-    @Bean("factory1")
-    public ConcurrentKafkaListenerContainerFactory<Integer, SolutionJudgedEvent> concurrentKafkaListenerContainerFactory() {
+    @Bean("solutionJudgedKafkaListenerContainerFactory")
+    public ConcurrentKafkaListenerContainerFactory<Integer, SolutionJudgedEvent> solutionJudgedKafkaListenerContainerFactory() {
         var factory = new ConcurrentKafkaListenerContainerFactory<Integer, SolutionJudgedEvent>();
         factory.setConsumerFactory(consumerFactory());
         return factory;
     }
 
     @Bean
-    NewTopic createTopic1() {
+    NewTopic solutionSubmittedTopic() {
         return TopicBuilder.name(solutionSubmittedTopic)
                 .partitions(3)
                 .build();
     }
 
+    @Bean
+    NewTopic solutionJudgedTopic() {
+        return TopicBuilder.name(solutionJudgedTopic)
+                .partitions(3)
+                .build();
+    }
 
     @Bean
-    NewTopic createTopic2() {
+    NewTopic standingsUpdateTopic() {
         return TopicBuilder.name(standingsUpdateTopic)
                 .partitions(3)
                 .build();

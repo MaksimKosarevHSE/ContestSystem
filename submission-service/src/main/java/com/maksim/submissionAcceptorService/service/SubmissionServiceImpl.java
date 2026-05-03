@@ -7,13 +7,15 @@ import com.maksim.submissionAcceptorService.dto.problem.ProblemConstrainsRespons
 import com.maksim.submissionAcceptorService.dto.submission.SubmissionCreateDto;
 import com.maksim.submissionAcceptorService.dto.submission.SubmissionDetailsResponseDto;
 import com.maksim.submissionAcceptorService.dto.submission.SubmissionResponseDto;
-import com.maksim.submissionAcceptorService.enums.Status;
 import com.maksim.submissionAcceptorService.entity.Submission;
-import com.maksim.submissionAcceptorService.event.SolutionSubmittedEvent;
+import com.maksim.submissionAcceptorService.enums.Status;
 import com.maksim.submissionAcceptorService.event.SolutionJudgedEvent;
-import com.maksim.submissionAcceptorService.exception.ResourceNotFoundException;
-import com.maksim.submissionAcceptorService.exception.ForbiddenException;
+import com.maksim.submissionAcceptorService.event.SolutionSubmittedEvent;
+import com.maksim.submissionAcceptorService.event.StandingsUpdateEvent;
 import com.maksim.submissionAcceptorService.exception.BadRequestException;
+import com.maksim.submissionAcceptorService.exception.ConflictException;
+import com.maksim.submissionAcceptorService.exception.ForbiddenException;
+import com.maksim.submissionAcceptorService.exception.ResourceNotFoundException;
 import com.maksim.submissionAcceptorService.repository.SubmissionRepository;
 import com.maksim.submissionAcceptorService.service.outbox.OutboxEventService;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Objects;
 
@@ -69,6 +71,8 @@ public class SubmissionServiceImpl implements SubmissionService {
                 .programmingLanguage(solution.language())
                 .status(Status.IN_QUEUE)
                 .isUpsolving(isUpsolving).build();
+                .isUpsolving(isUpsolving)
+                .build();
 
         submission = submissionRepository.save(submission);
 
@@ -79,21 +83,18 @@ public class SubmissionServiceImpl implements SubmissionService {
         return submissionMapper.toSubmissionResponseDto(submission);
     }
 
-
     public SubmissionResponseDto getSubmission(Long submissionId, Integer contestId) {
-        Submission submission = submissionRepository.findByIdAndContestId(submissionId, contestId)
-                .orElseThrow(() -> new ResourceNotFoundException("Submission not found"));
+        Submission submission = findSubmission(submissionId, contestId);
         SubmissionResponseDto response = submissionMapper.toSubmissionResponseDto(submission);
         wrapWithJudgingProgress(response);
         return response;
     }
 
-
     public SubmissionDetailsResponseDto getSubmissionDetails(Long submissionId, Integer contestId, Integer userId) {
-        Submission submission = submissionRepository.findByIdAndContestId(submissionId, contestId)
-                .orElseThrow(() -> new ResourceNotFoundException("Submission not found"));
-        if (!Objects.equals(userId, submission.getUserId()))
+        Submission submission = findSubmission(submissionId, contestId);
+        if (!Objects.equals(userId, submission.getUserId())) {
             throw new ForbiddenException("You can't get access to someone else's submission details");
+        }
 
         SubmissionDetailsResponseDto detailsResponse = submissionMapper.toSubmissionDetailsResponseDto(submission);
         if (detailsResponse.getStatus() == Status.IN_QUEUE) {
@@ -106,7 +107,6 @@ public class SubmissionServiceImpl implements SubmissionService {
         return detailsResponse;
     }
 
-
     public PageResponseDto<SubmissionResponseDto> getSubmissions(Integer contestId, Integer problemId, Integer userId, Status status, Integer page) {
         Page<SubmissionResponseDto> pageResponse = submissionRepository
                 .findAllFiltered(contestId, problemId, userId, status, PageRequest.of(page - 1, PAGE_SIZE))
@@ -118,30 +118,30 @@ public class SubmissionServiceImpl implements SubmissionService {
         return PageResponseDto.from(pageResponse);
     }
 
-
     @Transactional
-    public void processJudgedSolution(SolutionJudgedEvent ev) {
-        Submission submission = submissionRepository.findById(ev.getSubmissionId()).
-                orElseThrow(() -> new ResourceNotFoundException("Can't process event"));
+    public void processJudgedSolution(SolutionJudgedEvent event) {
+        Submission submission = submissionRepository.findById(event.getSubmissionId())
+                .orElseThrow(() -> new ResourceNotFoundException("Can't process event"));
 
-        if (ev.getStatus() == submission.getStatus()) {
-            return; // идемпотентность
+        if (event.getStatus() == submission.getStatus()) {
+            return; // Идемпотентность
         }
 
-        submissionMapper.updateFromEvent(submission, ev);
+        submissionMapper.updateFromEvent(submission, event);
         submissionRepository.save(submission);
 
         if (submission.getContestId() != null && !submission.getIsUpsolving()) {
-            var event = submissionMapper.toStandingsUpdateEvent(submission);
-            outboxEventService.save(standingsUpdateTopicName, event);
+            StandingsUpdateEvent standingsUpdateEvent = submissionMapper.toStandingsUpdateEvent(submission);
+            outboxEventService.save(standingsUpdateTopicName, standingsUpdateEvent);
         }
     }
-
 
     private void wrapWithJudgingProgress(SubmissionResponseDto response) {
         if (response.getStatus() == Status.IN_QUEUE) {
             Integer testNum = submissionProgressCacheService.getCachedTestNum(response.getId()).orElse(null);
-            if (testNum == null) return;
+            if (testNum == null) {
+                return;
+            }
             response.setTestNum(testNum);
             response.setStatus(Status.TESTING);
         }
@@ -151,16 +151,30 @@ public class SubmissionServiceImpl implements SubmissionService {
         try {
             boolean hasSourceFile = solution.sourceFile() != null;
             boolean hasSourceCode = solution.sourceCode() != null && !solution.sourceCode().isBlank();
-            if (!hasSourceFile && !hasSourceCode)
+
+            if (!hasSourceFile && !hasSourceCode) {
                 throw new BadRequestException("Source code was not provided");
+            }
+            if (hasSourceFile && hasSourceCode) {
+                throw new ConflictException("Provide either sourceFile or sourceCode, not both");
+            }
             if (hasSourceFile) {
-                return new String(solution.sourceFile().getBytes());
+                return new String(solution.sourceFile().getBytes(), StandardCharsets.UTF_8);
             }
             return solution.sourceCode();
         } catch (IOException ex) {
-            log.error("Error extracting source code");
-            throw new RuntimeException("Error extracting source code");
+            log.error("Error extracting source code", ex);
+            throw new BadRequestException("Failed to read source code");
         }
     }
 
+    private Submission findSubmission(Long submissionId, Integer contestId) {
+        if (contestId == null) {
+            return submissionRepository.findProblemSetSubmissionById(submissionId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Submission not found"));
+        }
+
+        return submissionRepository.findContestSubmissionById(submissionId, contestId)
+                .orElseThrow(() -> new ResourceNotFoundException("Submission not found"));
+    }
 }

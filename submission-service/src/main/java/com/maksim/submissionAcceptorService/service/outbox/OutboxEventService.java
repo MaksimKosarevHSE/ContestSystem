@@ -1,6 +1,5 @@
 package com.maksim.submissionAcceptorService.service.outbox;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.maksim.submissionAcceptorService.entity.OutboxEvent;
 import com.maksim.submissionAcceptorService.kafka.KafkaEventPublisher;
 import com.maksim.submissionAcceptorService.repository.OutboxEventRepository;
@@ -10,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
 
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -17,16 +17,13 @@ import tools.jackson.databind.ObjectMapper;
 public class OutboxEventService {
 
     private final OutboxEventRepository outboxEventRepository;
-
     private final KafkaEventPublisher kafkaEventPublisher;
-
     private final ObjectMapper objectMapper;
 
     @Transactional
     public void publishEvents() {
         outboxEventRepository.findAll()
                 .forEach(this::process);
-
     }
 
     private void process(OutboxEvent outboxEvent) {
@@ -34,16 +31,20 @@ public class OutboxEventService {
             kafkaEventPublisher.processOutboxEvent(outboxEvent);
             outboxEventRepository.delete(outboxEvent);
         } catch (Exception e) {
-            log.error("Failed to process event {}", outboxEvent.getEventId());
+            log.error("Failed to process outbox event {}", outboxEvent.getEventId(), e);
         }
     }
 
     public void save(String topic, Object payload) {
-        String payloadJson = objectMapper.writeValueAsString(payload);
-        OutboxEvent event = OutboxEvent.builder()
-                .eventType(topic)
-                .payload(payloadJson)
-                .build();
-        outboxEventRepository.save(event);
+        try {
+            OutboxEvent event = OutboxEvent.builder()
+                    .eventId(UUID.randomUUID())
+                    .eventType(topic)
+                    .payload(objectMapper.writeValueAsString(payload))
+                    .build();
+            outboxEventRepository.save(event);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to serialize outbox payload", e);
+        }
     }
 }

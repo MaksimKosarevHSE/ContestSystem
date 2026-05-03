@@ -2,7 +2,6 @@ package com.maksim.submissionAcceptorService.client;
 
 import com.maksim.submissionAcceptorService.dto.problem.ProblemConstrainsResponseDto;
 import com.maksim.submissionAcceptorService.exception.ResourceNotFoundException;
-import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -33,11 +32,14 @@ public class ProblemServiceClient {
         try {
             ResponseEntity<ProblemConstrainsResponseDto> response = restTemplate.getForEntity(
                     url, ProblemConstrainsResponseDto.class);
+            if (response.getBody() == null) {
+                throw new IllegalStateException("Problem service returned an empty response body");
+            }
             return response.getBody();
         } catch (HttpClientErrorException.NotFound e) {
             throw new ResourceNotFoundException("Problem with id " + problemId + " is not found");
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException("Failed to fetch problem constraints", e);
         }
     }
 }
