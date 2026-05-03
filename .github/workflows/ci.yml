@@ -22,9 +22,7 @@ jobs:
           cache: maven
 
       - name: Build jars
-        run: |
-          chmod +x ./build.sh
-          ./build.sh
+        run: mvn -s .mvn/settings.xml -B clean package -DskipTests
 
       - name: Build Docker images
         run: docker compose -f docker-compose-dev.yaml build
