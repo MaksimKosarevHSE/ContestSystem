@@ -70,7 +70,6 @@ public class SubmissionServiceImpl implements SubmissionService {
                 .source(source)
                 .programmingLanguage(solution.language())
                 .status(Status.IN_QUEUE)
-                .isUpsolving(isUpsolving).build();
                 .isUpsolving(isUpsolving)
                 .build();
 
