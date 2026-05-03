@@ -2,9 +2,9 @@ name: CI - Docker Compose Build & Smoke Test
 
 on:
   push:
-    branches: [ main, master, ci-dev ]
+    branches: [ main, master, ci-dev, building-feature ]
   pull_request:
-    branches: [ main, master, ci-dev ]
+    branches: [ main, master, ci-dev, building-feature ]
 
 jobs:
   test-compose:
@@ -13,6 +13,18 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Build jars
+        run: |
+          chmod +x ./build.sh
+          ./build.sh
 
       - name: Build Docker images
         run: docker compose -f docker-compose-dev.yaml build

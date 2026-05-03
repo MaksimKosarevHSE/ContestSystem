@@ -189,6 +189,8 @@ services:
     command: redis-server --requirepass ${REDIS_PASSWORD:-qwerty}
     environment:
       - REDIS_PASSWORD=${REDIS_PASSWORD:-qwerty}
+    networks:
+      - external
 
 networks:
   external:
