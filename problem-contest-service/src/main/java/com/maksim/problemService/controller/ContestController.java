@@ -32,8 +32,6 @@ public class ContestController {
 
     private final ProblemService problemService;
 
-    private final Integer PAGE_SIZE = 20;
-
     @PostMapping("/contest")
     @Operation(summary = "Create contest")
     @ApiResponses(value = {
@@ -104,8 +102,9 @@ public class ContestController {
             @ApiResponse(responseCode = "500",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public ResponseEntity<PageResponseDto<ContestResponseDto>> getPublicContests(@RequestParam(defaultValue = "1") Integer page) {
-        return ResponseEntity.ok(contestService.getPublicContests(page, PAGE_SIZE));
+    public ResponseEntity<PageResponseDto<ContestResponseDto>> getPublicContests(@RequestParam(defaultValue = "1") Integer page,
+                                                                                 @RequestParam(defaultValue = "20") Integer pageSize) {
+        return ResponseEntity.ok(contestService.getPublicContests(page, pageSize));
     }
 
 
@@ -120,8 +119,9 @@ public class ContestController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<PageResponseDto<ContestResponseDto>> getUserContests(@PathVariable Integer userId,
-                                                                               @RequestParam(defaultValue = "1") Integer page) {
-        return ResponseEntity.ok(contestService.getUsersContests(userId, page, PAGE_SIZE));
+                                                                               @RequestParam(defaultValue = "1") Integer page,
+                                                                               @RequestParam(defaultValue = "20") Integer pageSize) {
+        return ResponseEntity.ok(contestService.getUsersContests(userId, page, pageSize));
     }
 
 
@@ -153,8 +153,9 @@ public class ContestController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<PageResponseDto<Integer>> getContestants(@PathVariable Integer contestId,
-                                                                   @RequestParam(defaultValue = "1") Integer page) {
-        return ResponseEntity.ok(contestService.getRegisteredUsersIds(contestId, page, PAGE_SIZE));
+                                                                   @RequestParam(defaultValue = "1") Integer page,
+                                                                   @RequestParam(defaultValue = "20") Integer pageSize) {
+        return ResponseEntity.ok(contestService.getRegisteredUsersIds(contestId, page, pageSize));
     }
 
 

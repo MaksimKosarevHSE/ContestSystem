@@ -22,8 +22,6 @@ public class StandingsController {
 
     private final StandingsService standingsService;
 
-    private final Integer PAGE_SIZE = 10;
-
     @GetMapping("/contest/{contestId}/standings")
     @Operation(summary = "Get contest's standings")
     @ApiResponses(value = {
@@ -35,8 +33,9 @@ public class StandingsController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<PageResponseDto<UserProgressResponseDto>> getStandingsPage(@PathVariable Integer contestId,
-                                                                                     @RequestParam(name = "page", defaultValue = "1") Integer page) {
-        return ResponseEntity.ok(standingsService.getLeaderboard(contestId, page, PAGE_SIZE));
+                                                                                     @RequestParam(name = "page", defaultValue = "1") Integer page,
+                                                                                     @RequestParam(defaultValue = "10") Integer pageSize) {
+        return ResponseEntity.ok(standingsService.getLeaderboard(contestId, page, pageSize));
     }
 
     @GetMapping("/contest/{contestId}/user/{userId}/standings")

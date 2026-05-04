@@ -79,8 +79,9 @@ public class ContestSubmissionController {
                                                                                         @RequestParam(required = false) Integer problemId,
                                                                                         @RequestParam(required = false) Integer userId,
                                                                                         @RequestParam(required = false) Status status,
-                                                                                        @RequestParam(defaultValue = "1") Integer page) {
-        return ResponseEntity.ok(submissionService.getSubmissions(contestId, problemId, userId, status, page));
+                                                                                        @RequestParam(defaultValue = "1") Integer page,
+                                                                                        @RequestParam(defaultValue = "20") Integer pageSize) {
+        return ResponseEntity.ok(submissionService.getSubmissions(contestId, problemId, userId, status, page, pageSize));
     }
 
     @GetMapping("/contest/{contestId}/submission/{submissionId}/details")

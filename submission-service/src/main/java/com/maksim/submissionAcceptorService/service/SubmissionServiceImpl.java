@@ -52,8 +52,6 @@ public class SubmissionServiceImpl implements SubmissionService {
 
     private final OutboxEventService outboxEventService;
 
-    private static final int PAGE_SIZE = 20;
-
     @Transactional
     public SubmissionResponseDto submitSolution(Integer problemId, Integer contestId, Integer userId, SubmissionCreateDto solution) {
         Instant submissionTime = Instant.now();
@@ -106,9 +104,9 @@ public class SubmissionServiceImpl implements SubmissionService {
         return detailsResponse;
     }
 
-    public PageResponseDto<SubmissionResponseDto> getSubmissions(Integer contestId, Integer problemId, Integer userId, Status status, Integer page) {
+    public PageResponseDto<SubmissionResponseDto> getSubmissions(Integer contestId, Integer problemId, Integer userId, Status status, Integer page, Integer pageSize) {
         Page<SubmissionResponseDto> pageResponse = submissionRepository
-                .findAllFiltered(contestId, problemId, userId, status, PageRequest.of(page - 1, PAGE_SIZE))
+                .findAllFiltered(contestId, problemId, userId, status, PageRequest.of(page - 1, pageSize))
                 .map(submission -> {
                     SubmissionResponseDto responseDto = submissionMapper.toSubmissionResponseDto(submission);
                     wrapWithJudgingProgress(responseDto);

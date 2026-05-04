@@ -31,8 +31,6 @@ public class ProblemSetController {
 
     private final ProblemService problemService;
 
-    private final Integer PAGE_SIZE = 20;
-
     @PostMapping(value = "/problem", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Create problem")
     @ApiResponses(value = {
@@ -74,8 +72,9 @@ public class ProblemSetController {
             @ApiResponse(responseCode = "500",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public ResponseEntity<PageResponseDto<ProblemSignatureResponseDto>> getProblemsSignatures(@RequestParam(defaultValue = "1") Integer num) {
-        return ResponseEntity.ok(problemService.getPublicProblemsSignatures(num, PAGE_SIZE));
+    public ResponseEntity<PageResponseDto<ProblemSignatureResponseDto>> getProblemsSignatures(@RequestParam(defaultValue = "1") Integer num,
+                                                                                              @RequestParam(defaultValue = "20") Integer pageSize) {
+        return ResponseEntity.ok(problemService.getPublicProblemsSignatures(num, pageSize));
     }
 
 
@@ -90,8 +89,9 @@ public class ProblemSetController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<PageResponseDto<ProblemSignatureResponseDto>> getUserProblemsSignatures(@RequestParam(defaultValue = "1") Integer page,
+                                                                                                  @RequestParam(defaultValue = "20") Integer pageSize,
                                                                                                   @RequestHeader(value = "X-User-Id") Integer userId) {
-        return ResponseEntity.ok(problemService.getUsersProblemsSignatures(userId, page, PAGE_SIZE));
+        return ResponseEntity.ok(problemService.getUsersProblemsSignatures(userId, page, pageSize));
     }
 
 

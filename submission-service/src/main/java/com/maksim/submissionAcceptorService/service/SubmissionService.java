@@ -14,7 +14,7 @@ public interface SubmissionService {
 
     SubmissionDetailsResponseDto getSubmissionDetails(Long submissionId, Integer contestId, Integer userId);
 
-    PageResponseDto<SubmissionResponseDto> getSubmissions(Integer contestId, Integer problemId, Integer userId, Status status, Integer page);
+    PageResponseDto<SubmissionResponseDto> getSubmissions(Integer contestId, Integer problemId, Integer userId, Status status, Integer page, Integer pageSize);
 
     void processJudgedSolution(SolutionJudgedEvent ev);
 }
