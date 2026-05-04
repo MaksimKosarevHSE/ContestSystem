@@ -1,7 +1,7 @@
 package com.maksim.problemService.validators;
 
 import com.maksim.problemService.dto.problem.ProblemCreateDto;
-import com.maksim.problemService.enums.CheckerType;
+import com.maksim.common.enums.CheckerType;
 import com.maksim.problemService.exception.BadRequestException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

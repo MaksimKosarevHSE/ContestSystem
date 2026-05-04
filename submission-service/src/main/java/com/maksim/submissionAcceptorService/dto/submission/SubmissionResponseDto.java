@@ -1,7 +1,7 @@
 package com.maksim.submissionAcceptorService.dto.submission;
 
-import com.maksim.submissionAcceptorService.enums.ProgrammingLanguage;
-import com.maksim.submissionAcceptorService.enums.Status;
+import com.maksim.common.enums.ProgrammingLanguage;
+import com.maksim.common.enums.Status;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 

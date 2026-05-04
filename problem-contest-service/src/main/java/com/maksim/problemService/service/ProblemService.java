@@ -1,7 +1,7 @@
 package com.maksim.problemService.service;
 
-import com.maksim.problemService.dto.PageResponseDto;
-import com.maksim.problemService.dto.problem.ProblemConstrainsResponseDto;
+import com.maksim.common.dto.PageResponseDto;
+import com.maksim.common.dto.problem.ProblemConstrainsResponseDto;
 import com.maksim.problemService.dto.problem.ProblemCreateDto;
 import com.maksim.problemService.dto.problem.ProblemResponseDto;
 import com.maksim.problemService.dto.problem.ProblemSignatureResponseDto;

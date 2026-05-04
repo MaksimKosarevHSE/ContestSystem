@@ -1,5 +1,6 @@
 package com.maksim.submissionAcceptorService.handler;
 
+import com.maksim.common.dto.ErrorResponse;
 import com.maksim.submissionAcceptorService.exception.ConflictException;
 import com.maksim.submissionAcceptorService.exception.ResourceNotFoundException;
 import com.maksim.submissionAcceptorService.exception.ForbiddenException;

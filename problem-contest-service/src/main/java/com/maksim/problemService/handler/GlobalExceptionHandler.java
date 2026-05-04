@@ -1,5 +1,6 @@
 package com.maksim.problemService.handler;
 
+import com.maksim.common.dto.ErrorResponse;
 import com.maksim.problemService.exception.BadRequestException;
 import com.maksim.problemService.exception.ConflictException;
 import com.maksim.problemService.exception.ResourceNotFoundException;

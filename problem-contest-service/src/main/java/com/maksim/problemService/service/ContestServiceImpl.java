@@ -1,6 +1,6 @@
 package com.maksim.problemService.service;
 
-import com.maksim.problemService.dto.PageResponseDto;
+import com.maksim.common.dto.PageResponseDto;
 import com.maksim.problemService.dto.contest.ContestResponseDto;
 import com.maksim.problemService.dto.contest.CreateContestDto;
 import com.maksim.problemService.dto.contest.UpdateContestDto;

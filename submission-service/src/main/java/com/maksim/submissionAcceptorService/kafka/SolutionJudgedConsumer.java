@@ -1,7 +1,7 @@
 package com.maksim.submissionAcceptorService.kafka;
 
-import com.maksim.submissionAcceptorService.enums.Status;
-import com.maksim.submissionAcceptorService.event.SolutionJudgedEvent;
+import com.maksim.common.enums.Status;
+import com.maksim.common.event.SolutionJudgedEvent;
 import com.maksim.submissionAcceptorService.service.JudgingProgressCacheService;
 import com.maksim.submissionAcceptorService.service.JudgingProgressNotificationService;
 import com.maksim.submissionAcceptorService.service.SubmissionService;

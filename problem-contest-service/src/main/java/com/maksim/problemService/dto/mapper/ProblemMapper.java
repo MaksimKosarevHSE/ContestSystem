@@ -1,6 +1,6 @@
 package com.maksim.problemService.dto.mapper;
 
-import com.maksim.problemService.dto.problem.ProblemConstrainsResponseDto;
+import com.maksim.common.dto.problem.ProblemConstrainsResponseDto;
 import com.maksim.problemService.dto.problem.ProblemCreateDto;
 import com.maksim.problemService.dto.problem.ProblemResponseDto;
 import com.maksim.problemService.dto.problem.ProblemSignatureResponseDto;

@@ -1,7 +1,7 @@
 package com.maksim.testingService.service.execution;
 
-import com.maksim.testingService.enums.ProgrammingLanguage;
-import com.maksim.testingService.enums.Status;
+import com.maksim.common.enums.ProgrammingLanguage;
+import com.maksim.common.enums.Status;
 import com.maksim.testingService.exception.BadVerdictException;
 import com.maksim.testingService.service.model.VerdictInfo;
 import org.springframework.stereotype.Component;

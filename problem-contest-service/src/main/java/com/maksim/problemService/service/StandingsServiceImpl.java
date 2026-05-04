@@ -1,16 +1,16 @@
 package com.maksim.problemService.service;
 
 
-import com.maksim.problemService.dto.PageResponseDto;
+import com.maksim.common.dto.PageResponseDto;
 import com.maksim.problemService.dto.standings.TaskProgressResponseDto;
 import com.maksim.problemService.dto.standings.UserProgressResponseDto;
 import com.maksim.problemService.entity.Contest;
 import com.maksim.problemService.entity.associative.ContestUser;
 import com.maksim.problemService.entity.associative.ContestUserTask;
-import com.maksim.problemService.enums.Status;
+import com.maksim.common.enums.Status;
 import com.maksim.problemService.entity.keys.ContestUserId;
 import com.maksim.problemService.entity.keys.ContestUserTaskId;
-import com.maksim.problemService.event.StandingsUpdateEvent;
+import com.maksim.common.event.StandingsUpdateEvent;
 import com.maksim.problemService.exception.ConflictException;
 import com.maksim.problemService.exception.ResourceNotFoundException;
 import com.maksim.problemService.repository.ContestRepository;

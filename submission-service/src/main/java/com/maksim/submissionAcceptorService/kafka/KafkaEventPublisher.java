@@ -1,7 +1,7 @@
 package com.maksim.submissionAcceptorService.kafka;
 
 import com.maksim.submissionAcceptorService.entity.OutboxEvent;
-import com.maksim.submissionAcceptorService.event.SolutionSubmittedEvent;
+import com.maksim.common.event.SolutionSubmittedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerRecord;

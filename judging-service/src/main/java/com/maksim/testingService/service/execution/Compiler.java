@@ -1,7 +1,7 @@
 package com.maksim.testingService.service.execution;
 
-import com.maksim.testingService.enums.Status;
-import com.maksim.testingService.event.SolutionSubmittedEvent;
+import com.maksim.common.enums.Status;
+import com.maksim.common.event.SolutionSubmittedEvent;
 import com.maksim.testingService.exception.BadVerdictException;
 import com.maksim.testingService.service.model.VerdictInfo;
 import lombok.extern.slf4j.Slf4j;
@@ -17,11 +17,11 @@ import java.util.concurrent.TimeUnit;
 public class Compiler {
 
     public Path compile(Path sourceFile, Path outputDir, SolutionSubmittedEvent submission, VerdictInfo verdictInfo) {
-        if (!submission.language().needCompilation) {
+        if (!submission.getLanguage().needCompilation) {
             return sourceFile;
         }
         Path errorPath = outputDir.resolve("compile_error.log");
-        String[] compileCommand = submission.language().getCompileCommand(sourceFile);
+        String[] compileCommand = submission.getLanguage().getCompileCommand(sourceFile);
 
         ProcessBuilder pb = new ProcessBuilder(compileCommand);
         pb.redirectErrorStream(true);
@@ -29,7 +29,7 @@ public class Compiler {
 
         try {
             Process process = pb.start();
-            boolean finished = process.waitFor(submission.compilationTimeLimit(), TimeUnit.MILLISECONDS);
+            boolean finished = process.waitFor(submission.getCompilationTimeLimit(), TimeUnit.MILLISECONDS);
             if (!finished) {
                 process.destroyForcibly();
                 verdictInfo.setStatus(Status.COMPILE_ERROR);
@@ -42,7 +42,7 @@ public class Compiler {
                 throw new BadVerdictException("Compilation failed:\n" + out);
             }
             String sourcePathString = sourceFile.toString();
-            return Path.of(sourcePathString.substring(0, sourcePathString.lastIndexOf(".")) + submission.language().compiledSuffix);
+            return Path.of(sourcePathString.substring(0, sourcePathString.lastIndexOf(".")) + submission.getLanguage().compiledSuffix);
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }

@@ -1,7 +1,7 @@
 package com.maksim.testingService.kafka;
 
 import com.maksim.testingService.entity.ProcessedEvent;
-import com.maksim.testingService.event.SolutionSubmittedEvent;
+import com.maksim.common.event.SolutionSubmittedEvent;
 import com.maksim.testingService.service.JudgingManager;
 import com.maksim.testingService.respository.ProcessedEventRepository;
 import lombok.RequiredArgsConstructor;

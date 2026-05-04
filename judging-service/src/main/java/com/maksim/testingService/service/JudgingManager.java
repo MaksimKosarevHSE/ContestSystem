@@ -1,10 +1,10 @@
 package com.maksim.testingService.service;
 
-import com.maksim.testingService.enums.CheckerType;
-import com.maksim.testingService.enums.ProgrammingLanguage;
-import com.maksim.testingService.enums.Status;
-import com.maksim.testingService.event.TestCaseJudgedEvent;
-import com.maksim.testingService.event.SolutionSubmittedEvent;
+import com.maksim.common.enums.CheckerType;
+import com.maksim.common.enums.ProgrammingLanguage;
+import com.maksim.common.enums.Status;
+import com.maksim.common.event.SolutionJudgedEvent;
+import com.maksim.common.event.SolutionSubmittedEvent;
 import com.maksim.testingService.exception.*;
 import com.maksim.testingService.kafka.KafkaEventPublisher;
 import com.maksim.testingService.service.execution.Checker;
@@ -59,26 +59,26 @@ public class JudgingManager {
         VerdictInfo verdictInfo = new VerdictInfo();
 
         try {
-            log.debug("Starting process submission {}", submissionMeta.submissionId());
+            log.debug("Starting process submission {}", submissionMeta.getSubmissionId());
             Path sessionDir = Files.createTempDirectory(Path.of(this.sessionDir), null);
-            Path sourceFile = Files.createFile(sessionDir.resolve(SOURCE_FILE_NAME + submissionMeta.language().sourceSuffix));
-            Files.writeString(sourceFile, submissionMeta.source());
+            Path sourceFile = Files.createFile(sessionDir.resolve(SOURCE_FILE_NAME + submissionMeta.getLanguage().sourceSuffix));
+            Files.writeString(sourceFile, submissionMeta.getSource());
 
-            log.debug("Starting compilation of submission {}", submissionMeta.submissionId());
+            log.debug("Starting compilation of submission {}", submissionMeta.getSubmissionId());
             Path compiledFile = compiler.compile(sourceFile, sessionDir, submissionMeta, verdictInfo);
-            log.debug("Compilation of submission {} passed success", submissionMeta.submissionId());
+            log.debug("Compilation of submission {} passed success", submissionMeta.getSubmissionId());
 
             Path contestantSolution = sessionDir.resolve(CONTESTANT_OUT_FILE_NAME);
             Path checkerOutFile = sessionDir.resolve(CHECKER_OUT_FILE_NAME);
 
-            Path testSetDir = Path.of(testDir).resolve("problem_" + submissionMeta.problemId());
+            Path testSetDir = Path.of(testDir).resolve("problem_" + submissionMeta.getProblemId());
             TestCasesMetadata meta = new ObjectMapper().readValue(testSetDir.resolve("meta.json"), TestCasesMetadata.class);
             int testsCnt = meta.getTestCount();
 
             for (int i = 1; i <= testsCnt; i++) {
-                log.debug("Testing submission #{} on test №{}", submissionMeta.submissionId(), i);
+                log.debug("Testing submission #{} on test №{}", submissionMeta.getSubmissionId(), i);
                 verdictInfo.setTestNum(i);
-                kafkaEventPublisher.sendProgressAsync(submissionMeta.submissionId(), i);
+                kafkaEventPublisher.sendProgressAsync(submissionMeta.getSubmissionId(), i);
 
                 Path inputFile = testSetDir.resolve(i + ".in");
 
@@ -102,16 +102,12 @@ public class JudgingManager {
             verdictInfo.setStatus(Status.OK);
 
         } catch (IOException ex) {
-            log.error("Server error while judging submission №{}", submissionMeta.submissionId());
+            log.error("Server error while judging submission №{}", submissionMeta.getSubmissionId());
             throw new RuntimeException(ex);
         } catch (BadVerdictException ex) {
             verdictInfo.setCheckerMessage(ex.getMessage());
         }
-        log.debug("Submission №{} has been tested successfully with verdict {}", submissionMeta.submissionId(), verdictInfo.getStatus());
-        kafkaEventPublisher.sendVerdict(submissionMeta.submissionId(), verdictInfo);
+        log.debug("Submission №{} has been tested successfully with verdict {}", submissionMeta.getSubmissionId(), verdictInfo.getStatus());
+        kafkaEventPublisher.sendVerdict(submissionMeta.getSubmissionId(), verdictInfo);
     }
 }
-
-
-
-

@@ -1,9 +1,9 @@
 package com.maksim.testingService.service.model;
 
 
-import com.maksim.testingService.dto.SaveTestCasesRequestDto;
-import com.maksim.testingService.enums.CheckerType;
-import com.maksim.testingService.enums.ProgrammingLanguage;
+import com.maksim.common.dto.problem.SaveTestCasesRequestDto;
+import com.maksim.common.enums.CheckerType;
+import com.maksim.common.enums.ProgrammingLanguage;
 import lombok.*;
 
 

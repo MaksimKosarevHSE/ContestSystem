@@ -1,8 +1,8 @@
 package com.maksim.problemService.controller;
 
-import com.maksim.problemService.dto.PageResponseDto;
+import com.maksim.common.dto.PageResponseDto;
 import com.maksim.problemService.dto.standings.UserProgressResponseDto;
-import com.maksim.problemService.handler.ErrorResponse;
+import com.maksim.common.dto.ErrorResponse;
 import com.maksim.problemService.service.StandingsService;
 import com.maksim.problemService.service.StandingsServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;

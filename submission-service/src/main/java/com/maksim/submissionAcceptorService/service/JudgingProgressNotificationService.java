@@ -1,6 +1,6 @@
 package com.maksim.submissionAcceptorService.service;
 
-import com.maksim.submissionAcceptorService.event.SolutionJudgedEvent;
+import com.maksim.common.event.SolutionJudgedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;

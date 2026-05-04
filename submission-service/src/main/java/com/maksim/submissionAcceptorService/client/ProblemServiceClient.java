@@ -1,6 +1,6 @@
 package com.maksim.submissionAcceptorService.client;
 
-import com.maksim.submissionAcceptorService.dto.problem.ProblemConstrainsResponseDto;
+import com.maksim.common.dto.problem.ProblemConstrainsResponseDto;
 import com.maksim.submissionAcceptorService.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

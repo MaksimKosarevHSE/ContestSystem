@@ -1,8 +1,8 @@
 package com.maksim.testingService.service;
 
 
-import com.maksim.testingService.dto.SaveTestCasesRequestDto;
-import com.maksim.testingService.enums.CheckerType;
+import com.maksim.common.dto.problem.SaveTestCasesRequestDto;
+import com.maksim.common.enums.CheckerType;
 import com.maksim.testingService.exception.JuryCompilationException;
 import com.maksim.testingService.service.model.TestCasesMetadata;
 import lombok.extern.slf4j.Slf4j;

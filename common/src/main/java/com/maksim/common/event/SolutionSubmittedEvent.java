@@ -1,8 +1,10 @@
-package com.maksim.submissionAcceptorService.event;
+package com.maksim.common.event;
 
-import com.maksim.submissionAcceptorService.enums.ProgrammingLanguage;
-import jakarta.annotation.Nullable;
-import lombok.*;
+import com.maksim.common.enums.ProgrammingLanguage;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder

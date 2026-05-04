@@ -2,14 +2,14 @@ package com.maksim.problemService.service;
 
 
 import com.maksim.problemService.client.JudgingServiceClient;
-import com.maksim.problemService.dto.PageResponseDto;
+import com.maksim.common.dto.PageResponseDto;
 import com.maksim.problemService.dto.mapper.ProblemMapper;
-import com.maksim.problemService.dto.problem.ProblemConstrainsResponseDto;
+import com.maksim.common.dto.problem.ProblemConstrainsResponseDto;
+import com.maksim.common.dto.problem.SaveTestCasesRequestDto;
 import com.maksim.problemService.dto.problem.ProblemCreateDto;
 import com.maksim.problemService.dto.problem.ProblemResponseDto;
 import com.maksim.problemService.dto.problem.ProblemSignatureResponseDto;
 import com.maksim.problemService.dto.problem.ProblemUpdateDto;
-import com.maksim.problemService.dto.problem.SendTestCasesToJudgeServiceDto;
 import com.maksim.problemService.entity.associative.ContestProblem;
 import com.maksim.problemService.exception.ResourceNotFoundException;
 import com.maksim.problemService.exception.ForbiddenException;
@@ -47,8 +47,16 @@ public class ProblemServiceImpl implements ProblemService {
         problem.setCreatorId(creatorId);
         problem = problemRepository.save(problem);
 
-        SendTestCasesToJudgeServiceDto saveTestsDto = SendTestCasesToJudgeServiceDto.from(problemCreateDto);
-        saveTestsDto.setProblemId(problem.getId());
+        SaveTestCasesRequestDto saveTestsDto = problemCreateDto.toSaveTestCasesRequestDto();
+        saveTestsDto = new SaveTestCasesRequestDto(
+                problem.getId(),
+                saveTestsDto.testFilesContent(),
+                saveTestsDto.testFilesNames(),
+                saveTestsDto.countOfTestCases(),
+                saveTestsDto.checkerType(),
+                saveTestsDto.checkerLanguage(),
+                saveTestsDto.checkerSourceCode()
+        );
         judgingServiceClient.saveTestCases(saveTestsDto);
 
         return problemMapper.toResponseDto(problem);
@@ -120,6 +128,3 @@ public class ProblemServiceImpl implements ProblemService {
         return response;
     }
 }
-
-
-

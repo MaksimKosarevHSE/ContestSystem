@@ -2,6 +2,7 @@ package com.maksim.auth_service.handler;
 
 import com.maksim.auth_service.exception.ConflictException;
 import com.maksim.auth_service.exception.UnauthorizedException;
+import com.maksim.common.dto.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;

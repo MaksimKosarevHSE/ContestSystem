@@ -1,12 +1,15 @@
 package com.maksim.problemService.dto.problem;
 
-import com.maksim.problemService.enums.CheckerType;
-import com.maksim.problemService.enums.ProgrammingLanguage;
+import com.maksim.common.dto.problem.SaveTestCasesRequestDto;
+import com.maksim.common.enums.CheckerType;
+import com.maksim.common.enums.ProgrammingLanguage;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.stream.Stream;
 
 public record ProblemCreateDto(
 
@@ -84,7 +87,35 @@ public record ProblemCreateDto(
         @Schema(description = "Output for test in files. This files must be numbered from 1.out to N.out, where N is number of test cases")
         List<MultipartFile> outputTestCases
 ) {
+    public SaveTestCasesRequestDto toSaveTestCasesRequestDto() {
+        byte[] checkerSource = null;
+        if (checkerType == CheckerType.CUSTOM_CHECKER) {
+            checkerSource = readBytes(fileSourceChecker, "Failed to read checker source code");
+        }
+
+        List<byte[]> testFilesContent = Stream.concat(inputTestCases.stream(), outputTestCases.stream())
+                .map(file -> readBytes(file, "Failed to read test case file"))
+                .toList();
+        List<String> testFilesNames = Stream.concat(inputTestCases.stream(), outputTestCases.stream())
+                .map(MultipartFile::getOriginalFilename)
+                .toList();
+
+        return new SaveTestCasesRequestDto(
+                null,
+                testFilesContent,
+                testFilesNames,
+                testCasesNum,
+                checkerType,
+                checkerLanguage,
+                checkerSource
+        );
+    }
+
+    private static byte[] readBytes(MultipartFile file, String errorMessage) {
+        try {
+            return file.getBytes();
+        } catch (IOException e) {
+            throw new IllegalStateException(errorMessage, e);
+        }
+    }
 }
-
-
-

@@ -1,7 +1,7 @@
 package com.maksim.testingService.config;
 
 
-import com.maksim.testingService.event.SolutionSubmittedEvent;
+import com.maksim.common.event.SolutionSubmittedEvent;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.IntegerDeserializer;

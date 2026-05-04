@@ -1,10 +1,9 @@
-package com.maksim.testingService.dto;
+package com.maksim.common.dto.problem;
 
-import com.maksim.testingService.enums.CheckerType;
-import com.maksim.testingService.enums.ProgrammingLanguage;
+import com.maksim.common.enums.CheckerType;
+import com.maksim.common.enums.ProgrammingLanguage;
 
 import java.util.List;
-
 
 public record SaveTestCasesRequestDto(
         Integer problemId,

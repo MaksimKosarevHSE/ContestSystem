@@ -1,6 +1,6 @@
 package com.maksim.submissionAcceptorService.repository;
 
-import com.maksim.submissionAcceptorService.enums.Status;
+import com.maksim.common.enums.Status;
 import com.maksim.submissionAcceptorService.entity.Submission;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

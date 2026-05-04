@@ -1,7 +1,7 @@
 package com.maksim.problemService.kafka;
 
 import com.maksim.problemService.entity.ProcessedEvent;
-import com.maksim.problemService.event.StandingsUpdateEvent;
+import com.maksim.common.event.StandingsUpdateEvent;
 import com.maksim.problemService.repository.ProcessedEventRepository;
 import com.maksim.problemService.service.StandingsService;
 import com.maksim.problemService.service.StandingsServiceImpl;

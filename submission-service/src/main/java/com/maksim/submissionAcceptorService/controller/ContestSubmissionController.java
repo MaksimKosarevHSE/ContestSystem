@@ -1,11 +1,11 @@
 package com.maksim.submissionAcceptorService.controller;
 
-import com.maksim.submissionAcceptorService.dto.PageResponseDto;
+import com.maksim.common.dto.PageResponseDto;
 import com.maksim.submissionAcceptorService.dto.submission.SubmissionCreateDto;
 import com.maksim.submissionAcceptorService.dto.submission.SubmissionDetailsResponseDto;
 import com.maksim.submissionAcceptorService.dto.submission.SubmissionResponseDto;
-import com.maksim.submissionAcceptorService.enums.Status;
-import com.maksim.submissionAcceptorService.handler.ErrorResponse;
+import com.maksim.common.enums.Status;
+import com.maksim.common.dto.ErrorResponse;
 import com.maksim.submissionAcceptorService.service.SubmissionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

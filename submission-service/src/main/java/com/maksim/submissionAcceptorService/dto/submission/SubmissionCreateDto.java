@@ -1,6 +1,6 @@
 package com.maksim.submissionAcceptorService.dto.submission;
 
-import com.maksim.submissionAcceptorService.enums.ProgrammingLanguage;
+import com.maksim.common.enums.ProgrammingLanguage;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.web.multipart.MultipartFile;

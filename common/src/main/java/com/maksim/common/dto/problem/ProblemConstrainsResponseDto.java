@@ -1,10 +1,14 @@
-package com.maksim.problemService.dto.problem;
+package com.maksim.common.dto.problem;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class ProblemConstrainsResponseDto {
     private Integer id;
     private Integer compileTimeLimit;

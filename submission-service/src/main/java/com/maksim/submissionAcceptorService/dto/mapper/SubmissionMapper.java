@@ -1,12 +1,12 @@
 package com.maksim.submissionAcceptorService.dto.mapper;
 
-import com.maksim.submissionAcceptorService.dto.problem.ProblemConstrainsResponseDto;
+import com.maksim.common.dto.problem.ProblemConstrainsResponseDto;
 import com.maksim.submissionAcceptorService.dto.submission.SubmissionDetailsResponseDto;
 import com.maksim.submissionAcceptorService.dto.submission.SubmissionResponseDto;
 import com.maksim.submissionAcceptorService.entity.Submission;
-import com.maksim.submissionAcceptorService.event.SolutionJudgedEvent;
-import com.maksim.submissionAcceptorService.event.SolutionSubmittedEvent;
-import com.maksim.submissionAcceptorService.event.StandingsUpdateEvent;
+import com.maksim.common.event.SolutionJudgedEvent;
+import com.maksim.common.event.SolutionSubmittedEvent;
+import com.maksim.common.event.StandingsUpdateEvent;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;

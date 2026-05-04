@@ -1,7 +1,7 @@
 package com.maksim.testingService.kafka;
 
-import com.maksim.testingService.enums.Status;
-import com.maksim.testingService.event.TestCaseJudgedEvent;
+import com.maksim.common.enums.Status;
+import com.maksim.common.event.SolutionJudgedEvent;
 import com.maksim.testingService.mapper.VerdictMapper;
 import com.maksim.testingService.service.model.VerdictInfo;
 import lombok.RequiredArgsConstructor;
@@ -43,7 +43,7 @@ public class KafkaEventPublisher {
     }
 
     public void sendProgressAsync(Long submissionId, Integer testNum) {
-        TestCaseJudgedEvent event = TestCaseJudgedEvent.builder()
+        SolutionJudgedEvent event = SolutionJudgedEvent.builder()
                 .submissionId(submissionId)
                 .testNum(testNum)
                 .status(Status.TESTING).build();
@@ -51,7 +51,7 @@ public class KafkaEventPublisher {
     }
 
     public void sendVerdict(Long submissionId, VerdictInfo verdictInfo) {
-        TestCaseJudgedEvent event = verdictMapper.toEvent(verdictInfo);
+        SolutionJudgedEvent event = verdictMapper.toEvent(verdictInfo);
         event.setSubmissionId(submissionId);
         send(testCaseJudgedEventTopic, event);
     }

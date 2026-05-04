@@ -1,6 +1,6 @@
 package com.maksim.testingService.controller;
 
-import com.maksim.testingService.dto.SaveTestCasesRequestDto;
+import com.maksim.common.dto.problem.SaveTestCasesRequestDto;
 import com.maksim.testingService.exception.JuryCompilationException;
 import com.maksim.testingService.service.JudgingService;
 import lombok.RequiredArgsConstructor;

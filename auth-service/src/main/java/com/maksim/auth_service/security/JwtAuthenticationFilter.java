@@ -1,6 +1,6 @@
 package com.maksim.auth_service.security;
 
-import com.maksim.auth_service.handler.ErrorResponse;
+import com.maksim.common.dto.ErrorResponse;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

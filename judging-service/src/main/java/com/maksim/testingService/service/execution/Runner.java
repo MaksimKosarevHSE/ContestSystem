@@ -1,7 +1,7 @@
 package com.maksim.testingService.service.execution;
 
-import com.maksim.testingService.enums.Status;
-import com.maksim.testingService.event.SolutionSubmittedEvent;
+import com.maksim.common.enums.Status;
+import com.maksim.common.event.SolutionSubmittedEvent;
 import com.maksim.testingService.exception.BadVerdictException;
 import com.maksim.testingService.service.model.VerdictInfo;
 import lombok.extern.slf4j.Slf4j;
@@ -16,14 +16,14 @@ import java.util.concurrent.TimeUnit;
 public class Runner {
 
     public void run(SolutionSubmittedEvent submissionMeta, Path executable, Path inputFile, Path outputFile, VerdictInfo verdictInfo) {
-        String[] command = submissionMeta.language().getRunCommand(executable);
+        String[] command = submissionMeta.getLanguage().getRunCommand(executable);
         ProcessBuilder pb = new ProcessBuilder(command);
         pb.redirectInput(inputFile.toFile());
         pb.redirectOutput(outputFile.toFile());
         try {
             Process process = pb.start();
             long start = System.currentTimeMillis();
-            boolean finished = process.waitFor(submissionMeta.timeLimit(), TimeUnit.MILLISECONDS);
+            boolean finished = process.waitFor(submissionMeta.getTimeLimit(), TimeUnit.MILLISECONDS);
             int duration = (int) (System.currentTimeMillis() - start);
 
             verdictInfo.setMemory(-1);

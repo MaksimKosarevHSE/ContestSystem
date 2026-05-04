@@ -1,11 +1,11 @@
 package com.maksim.submissionAcceptorService.service;
 
-import com.maksim.submissionAcceptorService.dto.PageResponseDto;
+import com.maksim.common.dto.PageResponseDto;
 import com.maksim.submissionAcceptorService.dto.submission.SubmissionCreateDto;
 import com.maksim.submissionAcceptorService.dto.submission.SubmissionDetailsResponseDto;
 import com.maksim.submissionAcceptorService.dto.submission.SubmissionResponseDto;
-import com.maksim.submissionAcceptorService.enums.Status;
-import com.maksim.submissionAcceptorService.event.SolutionJudgedEvent;
+import com.maksim.common.enums.Status;
+import com.maksim.common.event.SolutionJudgedEvent;
 
 public interface SubmissionService {
     SubmissionResponseDto submitSolution(Integer problemId, Integer contestId, Integer userId, SubmissionCreateDto solution);

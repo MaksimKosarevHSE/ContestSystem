@@ -1,14 +1,14 @@
 package com.maksim.problemService.controller;
 
 
-import com.maksim.problemService.dto.PageResponseDto;
-import com.maksim.problemService.dto.problem.ProblemConstrainsResponseDto;
+import com.maksim.common.dto.PageResponseDto;
+import com.maksim.common.dto.problem.ProblemConstrainsResponseDto;
 import com.maksim.problemService.dto.problem.ProblemCreateDto;
 import com.maksim.problemService.dto.problem.ProblemResponseDto;
 import com.maksim.problemService.dto.problem.ProblemSignatureResponseDto;
 import com.maksim.problemService.dto.problem.ProblemUpdateDto;
 import com.maksim.problemService.entity.Problem;
-import com.maksim.problemService.handler.ErrorResponse;
+import com.maksim.common.dto.ErrorResponse;
 import com.maksim.problemService.service.ProblemService;
 import com.maksim.problemService.service.ProblemServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;

@@ -1,12 +1,12 @@
 package com.maksim.problemService.controller;
 
-import com.maksim.problemService.dto.PageResponseDto;
+import com.maksim.common.dto.PageResponseDto;
 import com.maksim.problemService.dto.contest.ContestResponseDto;
 import com.maksim.problemService.dto.contest.CreateContestDto;
 import com.maksim.problemService.dto.contest.UpdateContestDto;
-import com.maksim.problemService.dto.problem.ProblemConstrainsResponseDto;
+import com.maksim.common.dto.problem.ProblemConstrainsResponseDto;
 import com.maksim.problemService.dto.problem.ProblemResponseDto;
-import com.maksim.problemService.handler.ErrorResponse;
+import com.maksim.common.dto.ErrorResponse;
 import com.maksim.problemService.service.ContestService;
 import com.maksim.problemService.service.ProblemService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -192,4 +192,3 @@ public class ContestController {
     }
 
 }
-

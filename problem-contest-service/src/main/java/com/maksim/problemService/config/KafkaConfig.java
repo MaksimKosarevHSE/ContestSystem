@@ -1,6 +1,6 @@
 package com.maksim.problemService.config;
 
-import com.maksim.problemService.event.StandingsUpdateEvent;
+import com.maksim.common.event.StandingsUpdateEvent;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;

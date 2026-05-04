@@ -1,6 +1,6 @@
 package com.maksim.problemService.client;
 
-import com.maksim.problemService.dto.problem.SendTestCasesToJudgeServiceDto;
+import com.maksim.common.dto.problem.SaveTestCasesRequestDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,11 +19,11 @@ public class JudgingServiceClient {
 
     private final RestTemplate restTemplate;
 
-    public void saveTestCases(SendTestCasesToJudgeServiceDto dto) {
+    public void saveTestCases(SaveTestCasesRequestDto dto) {
         ResponseEntity<String> response = restTemplate
                 .postForEntity(testServiceUrl + "/append-tests", dto, String.class);
         if (response.getStatusCode() != HttpStatus.OK) {
-            log.error("Error saving test cases (problem ID: {})", dto.getProblemId());
+            log.error("Error saving test cases (problem ID: {})", dto.problemId());
             throw new RuntimeException(response.getBody());
         }
     }
