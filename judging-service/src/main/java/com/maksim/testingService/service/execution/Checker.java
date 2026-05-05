@@ -7,7 +7,6 @@ import com.maksim.testingService.service.model.VerdictInfo;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,27 +16,25 @@ import java.util.concurrent.TimeUnit;
 
 @Component
 public class Checker {
-
-    private final int JUDGING_TIME_LIMIT = 10000; // ms
+    private static final int JUDGING_TIME_LIMIT_MS = 10_000;
 
     public void exactMatchCheck(Path jurySolution, Path contestantSolution, VerdictInfo verdictInfo) {
-        try (BufferedReader judgeReader = new BufferedReader(new FileReader(jurySolution.toFile()));
-             BufferedReader conReader = new BufferedReader(new FileReader(contestantSolution.toFile()))) {
+        try (BufferedReader judgeReader = Files.newBufferedReader(jurySolution);
+             BufferedReader contestantReader = Files.newBufferedReader(contestantSolution)) {
             int lineCnt = 1;
-            String line1, line2;
+            String line1;
+            String line2;
             while (true) {
                 line1 = judgeReader.readLine();
-                line2 = conReader.readLine();
+                line2 = contestantReader.readLine();
                 if (line1 == null && line2 == null) {
                     break;
                 }
                 if (line1 == null || line2 == null) {
                     verdictInfo.setStatus(Status.WRONG_ANSWER);
-                    String msg;
-                    if (line1 == null)
-                        msg = "The number of lines is less than that of the judge's solution";
-                    else
-                        msg = "The number of lines is greater that that of the judge's solution";
+                    String msg = line1 == null
+                            ? "The number of lines is less than that of the judge's solution"
+                            : "The number of lines is greater that that of the judge's solution";
                     throw new BadVerdictException(msg);
                 }
 
@@ -62,7 +59,7 @@ public class Checker {
         ProcessBuilder builder = new ProcessBuilder(command);
         try {
             Process process = builder.start();
-            boolean finished = process.waitFor(JUDGING_TIME_LIMIT, TimeUnit.SECONDS);
+            boolean finished = process.waitFor(JUDGING_TIME_LIMIT_MS, TimeUnit.MILLISECONDS);
             if (!finished) {
                 throw new RuntimeException("Checker TL error");
             }

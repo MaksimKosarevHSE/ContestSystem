@@ -14,4 +14,15 @@ public record SaveTestCasesRequestDto(
         ProgrammingLanguage checkerLanguage,
         byte[] checkerSourceCode
 ) {
+    public SaveTestCasesRequestDto withProblemId(Integer problemId) {
+        return new SaveTestCasesRequestDto(
+                problemId,
+                testFilesContent,
+                testFilesNames,
+                countOfTestCases,
+                checkerType,
+                checkerLanguage,
+                checkerSourceCode
+        );
+    }
 }

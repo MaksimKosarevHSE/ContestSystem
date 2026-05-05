@@ -10,7 +10,6 @@ import com.maksim.problemService.dto.problem.ProblemUpdateDto;
 import com.maksim.problemService.entity.Problem;
 import com.maksim.common.dto.ErrorResponse;
 import com.maksim.problemService.service.ProblemService;
-import com.maksim.problemService.service.ProblemServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;

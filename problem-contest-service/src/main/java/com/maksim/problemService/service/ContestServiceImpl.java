@@ -8,7 +8,8 @@ import com.maksim.problemService.dto.mapper.ContestMapper;
 import com.maksim.problemService.dto.mapper.ProblemMapper;
 import com.maksim.problemService.dto.problem.ProblemResponseDto;
 import com.maksim.problemService.dto.problem.ProblemSignatureResponseDto;
-import com.maksim.problemService.entity.*;
+import com.maksim.problemService.entity.Contest;
+import com.maksim.problemService.entity.Problem;
 import com.maksim.problemService.entity.associative.ContestProblem;
 import com.maksim.problemService.entity.associative.ContestUser;
 import com.maksim.problemService.entity.keys.ContestUserId;
@@ -27,7 +28,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,8 +46,6 @@ public class ContestServiceImpl implements ContestService {
 
     private final ProblemMapper problemMapper;
 
-    private final ContestUserRepository cuRepository;
-
     private final ContestProblemRepository contestProblemRepository;
 
     @Transactional
@@ -61,11 +61,7 @@ public class ContestServiceImpl implements ContestService {
 
     @Transactional
     public ContestResponseDto updateContest(Integer contestId, UpdateContestDto dto, Integer userId) {
-        Contest contest = contestRepository.findById(contestId)
-                .orElseThrow(() -> new ResourceNotFoundException("Contest not found"));
-        if (contest.getAuthorId() != (int) userId) {
-            throw new ForbiddenException("Only author can update contest");
-        }
+        Contest contest = getOwnedContest(contestId, userId);
         if (contest.getStartTime().isBefore(Instant.now())) {
             throw new BadRequestException("Contest already started. You can't change it");
         }
@@ -81,11 +77,7 @@ public class ContestServiceImpl implements ContestService {
     }
 
     public void deleteContest(Integer contestId, Integer userId) {
-        Contest contest = contestRepository.findById(contestId)
-                .orElseThrow(() -> new ResourceNotFoundException("Contest not found"));
-        if (contest.getAuthorId() != (int) userId) {
-            throw new ForbiddenException("Only author can delete contest");
-        }
+        Contest contest = getOwnedContest(contestId, userId);
         contestRepository.delete(contest);
     }
 
@@ -137,24 +129,34 @@ public class ContestServiceImpl implements ContestService {
 
     @Transactional
     public void registerUser(Integer contestId, Integer userId) {
-        if (!contestRepository.existsById(contestId))
+        if (!contestRepository.existsById(contestId)) {
             throw new ResourceNotFoundException("Contest not found");
-
+        }
 
         ContestUserId contestUserId = new ContestUserId(userId, contestId);
-        if (contestUserRepository.existsById(contestUserId))
+        if (contestUserRepository.existsById(contestUserId)) {
             throw new ConflictException("User is already registered");
+        }
 
         ContestUser cu = new ContestUser();
         cu.setId(contestUserId);
         cu.setContest(contestRepository.getReferenceById(contestId));
-        cuRepository.save(cu);
+        contestUserRepository.save(cu);
     }
 
     public PageResponseDto<Integer> getRegisteredUsersIds(Integer contestId, Integer page, Integer pageSize) {
-        Page<Integer> ids = contestUserRepository.findById_ContestId(contestId, PageRequest.of(page, pageSize))
+        Page<Integer> ids = contestUserRepository.findById_ContestId(contestId, PageRequest.of(page - 1, pageSize))
                 .map(contestUser -> contestUser.getId().getUserId());
         return PageResponseDto.from(ids);
+    }
+
+    private Contest getOwnedContest(Integer contestId, Integer userId) {
+        Contest contest = contestRepository.findById(contestId)
+                .orElseThrow(() -> new ResourceNotFoundException("Contest not found"));
+        if (contest.getAuthorId() != userId) {
+            throw new ForbiddenException("Only author can manage contest");
+        }
+        return contest;
     }
 
     private void assignProblems(Contest contest, List<Integer> problemIds, int userId) {

@@ -47,16 +47,8 @@ public class ProblemServiceImpl implements ProblemService {
         problem.setCreatorId(creatorId);
         problem = problemRepository.save(problem);
 
-        SaveTestCasesRequestDto saveTestsDto = problemCreateDto.toSaveTestCasesRequestDto();
-        saveTestsDto = new SaveTestCasesRequestDto(
-                problem.getId(),
-                saveTestsDto.testFilesContent(),
-                saveTestsDto.testFilesNames(),
-                saveTestsDto.countOfTestCases(),
-                saveTestsDto.checkerType(),
-                saveTestsDto.checkerLanguage(),
-                saveTestsDto.checkerSourceCode()
-        );
+        SaveTestCasesRequestDto saveTestsDto = problemCreateDto.toSaveTestCasesRequestDto()
+                .withProblemId(problem.getId());
         judgingServiceClient.saveTestCases(saveTestsDto);
 
         return problemMapper.toResponseDto(problem);
@@ -64,11 +56,7 @@ public class ProblemServiceImpl implements ProblemService {
 
     @Transactional
     public ProblemResponseDto updateProblem(Integer id, ProblemUpdateDto dto, Integer userId) {
-        Problem problem = problemRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Problem not found"));
-        if (problem.getCreatorId() != (int) userId) {
-            throw new ForbiddenException("Only author can update problem");
-        }
+        Problem problem = getOwnedProblem(id, userId);
         problemMapper.updateFromPatch(problem, dto);
         problem = problemRepository.save(problem);
         return problemMapper.toResponseDto(problem);
@@ -76,11 +64,7 @@ public class ProblemServiceImpl implements ProblemService {
 
     @Transactional
     public void deleteProblem(Integer id, Integer userId) {
-        Problem problem = problemRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Problem not found"));
-        if (problem.getCreatorId() != (int) userId) {
-            throw new ForbiddenException("Only author can delete problem");
-        }
+        Problem problem = getOwnedProblem(id, userId);
         if (contestProblemRepository.existsByProblemId(id)) {
             throw new BadRequestException("Problem is used in contests, can't delete");
         }
@@ -126,5 +110,14 @@ public class ProblemServiceImpl implements ProblemService {
         response.setContestStartTime(contestProblem.getContest().getStartTime());
 
         return response;
+    }
+
+    private Problem getOwnedProblem(Integer problemId, Integer userId) {
+        Problem problem = problemRepository.findById(problemId)
+                .orElseThrow(() -> new ResourceNotFoundException("Problem not found"));
+        if (problem.getCreatorId() != userId) {
+            throw new ForbiddenException("Only author can manage problem");
+        }
+        return problem;
     }
 }
